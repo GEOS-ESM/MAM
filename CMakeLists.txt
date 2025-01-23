@@ -49,7 +49,7 @@ set (srcs
   MAM_BlackCarbonMod.F90
   MAM_OrganicCarbonMod.F90
   MAM_SulfateMod.F90
-  MAMchem_GridCompMod.F90
+  MAM_GridCompMod.F90
   #      wetdep.F90
   )
 

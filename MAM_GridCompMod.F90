@@ -5,11 +5,11 @@
 !-------------------------------------------------------------------------
 !BOP
 !
-! !MODULE: MAMchem_GridCompMod - Implements MAM Chemistry
+! !MODULE: MAM_GridCompMod - Implements MAM Chemistry
 !
 ! !INTERFACE:
 !
-   module MAMchem_GridCompMod
+   module MAM_GridCompMod
 !
 ! !USES:
 !
@@ -62,9 +62,9 @@
 
    public SetServices
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
-!  {\tt MAMchem\_GridComp} is an ESMF gridded component implementing
+!  {\tt MAM\_GridComp} is an ESMF gridded component implementing
 !  the MAM aerosol microphysical processes.
 !
 !  Developed for GEOS-5 release Fortuna 2.0 and later.
@@ -93,7 +93,7 @@
 
       type(MAPL_SimpleBundle)     :: qa           ! Interstitial aerosol species and absorbed water
       type(MAPL_SimpleBundle)     :: qc           ! Cloud-borne  aerosol species
-      type(MAPL_SimpleBundle)     :: qg           ! Gas species 
+      type(MAPL_SimpleBundle)     :: qg           ! Gas species
 
       type(MAPL_SimpleBundle)     :: Da           ! Dry and 'wet' geometric mean diameter of interstitial aerosol number size distribution
 
@@ -159,7 +159,7 @@ contains
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: SetServices --- Sets IRF services for the MAMchem Grid Component
+! !IROUTINE: SetServices --- Sets IRF services for the MAM Grid Component
 !
 ! !INTERFACE:
 
@@ -170,7 +170,7 @@ contains
     type(ESMF_GridComp), intent(INOUT) :: GC  ! gridded component
     integer, optional                  :: RC  ! return code
 
-! !DESCRIPTION: Sets Initialize, Run and Finalize services. 
+! !DESCRIPTION: Sets Initialize, Run and Finalize services.
 !
 ! !REVISION HISTORY:
 !
@@ -203,12 +203,12 @@ contains
 
 !   local
 !   -----
-    type(ESMF_Config)          :: CF                ! Universal Config 
+    type(ESMF_Config)          :: CF                ! Universal Config
     character(len=1024)        :: mie_optics_file   ! MAM Mie optics table file
 
     character(len=ESMF_MAXSTR), parameter:: microphysics_process(4) = (/'GAEX', 'RNAM', 'NUCL', 'COND'/)
     character(len=ESMF_MAXSTR) :: process           ! abbreviation of the process
-    integer                    :: i                 ! counter 
+    integer                    :: i                 ! counter
 
 !   Get my name and set-up traceback handle
 !   ---------------------------------------
@@ -230,7 +230,7 @@ contains
 !   Load private Config Attributes
 !   ------------------------------
     self%CF = ESMF_ConfigCreate(__RC__)
-    call ESMF_ConfigLoadFile ( self%CF, 'MAMchem_GridComp.rc', __RC__ )
+    call ESMF_ConfigLoadFile ( self%CF, 'MAM_GridComp.rc', __RC__ )
 
     call ESMF_ConfigGetAttribute ( self%CF, self%verbose,      label='verbose:',       default=.false.,  __RC__ )
 
@@ -246,7 +246,7 @@ contains
     call ESMF_ConfigGetAttribute ( self%CF, self%microphysics, label='microphysics:',  default=.true.,   __RC__ )
     call ESMF_ConfigGetAttribute ( self%CF, self%mode_merging, label='mode_merging:',  default=.true.,   __RC__ )
 
-    
+
 !   call ESMF_ConfigGetAttribute ( self%CF, self%femisSS,      label='seasalt_femis:', default=1.0,      __RC__ )
 !   call ESMF_ConfigGetAttribute ( self%CF, self%femisDU,      label='dust_femis:',    default=1.0,      __RC__ )
 
@@ -320,12 +320,12 @@ contains
     call MAPL_GridCompSetEntryPoint ( GC, ESMF_METHOD_INITIALIZE, Initialize_, __RC__ )
     call MAPL_GridCompSetEntryPoint ( GC, ESMF_METHOD_RUN,        Run_,        __RC__ )
     call MAPL_GridCompSetEntryPoint ( GC, ESMF_METHOD_FINALIZE,   Finalize_,   __RC__ )
-        
+
 !   Store internal state in GC
 !   --------------------------
     call ESMF_UserCompSetInternalState ( GC, 'MAM_state', wrap, STATUS )
     VERIFY_(STATUS)
-  
+
 !                         ------------------
 !                         MAPL Data Services
 !                         ------------------
@@ -334,14 +334,14 @@ contains
 !
 ! !IMPORT STATE:
 
-#include "MAMchem_ImportSpec___.h"
+#include "MAM_ImportSpec___.h"
 
 ! !INTERNAL STATE:
 
 
 ! !EXTERNAL STATE:
 
-#include "MAMchem_ExportSpec___.h"
+#include "MAM_ExportSpec___.h"
 
 !EOS
 
@@ -466,7 +466,7 @@ contains
 
     do m = 1, self%scheme%n_modes
         call MAM_AerosolModeGet(self%scheme%mode(m), name=mode_name, long_name=mode_long_name, n_species=n_species)
-      
+
         field_name = 'DGN_DRY_' // trim(mode_name)
         field_long_name = 'dry geometric mean diameter of ' // trim(attachment_state) // ' aerosol particles in ' // trim(mode_long_name) // ' mode'
 
@@ -478,7 +478,7 @@ contains
                                       RESTART    = MAPL_RestartSkip,      &
                                       FRIENDLYTO = trim(COMP_NAME), __RC__)
 
-        
+
         field_name = 'DGN_WET_' // trim(mode_name)
         field_long_name = 'wet size of ' // trim(attachment_state) // ' aerosol particles in ' // trim(mode_long_name) // ' mode'
 
@@ -492,7 +492,7 @@ contains
     end do
 #endif
 
-!   This state is needed by radiation - It will contain 
+!   This state is needed by radiation - It will contain
 !   aerosol number and mass mixing ratios, and aerosol optics
 !   ---------------------------------------------------------------
     call MAPL_AddExportSpec(GC, SHORT_NAME = 'AERO',                      &
@@ -515,14 +515,14 @@ contains
 
 
 !
-!   Diagnostics: Column-integrated tendencies due to 
-!   gas-aerosol-exchange/condensation, rename, nucleation and 
+!   Diagnostics: Column-integrated tendencies due to
+!   gas-aerosol-exchange/condensation, rename, nucleation and
 !   coagulation
 !   ---------------------------------------------------------------
     MICROPHYSICS_PROCESSES: do i = 1, size(microphysics_process)
 
     process = trim(microphysics_process(i))
-  
+
     attachment_state = 'interstitial'
 
     do m = 1, self%scheme%n_modes
@@ -592,9 +592,9 @@ contains
     end if CLOUD_BOURNE_RENAME_DIAGNOSTICS
 
     end do MICROPHYSICS_PROCESSES
-    
 
-    
+
+
 !   Create Mie tables for coupling with radiation
 !   ---------------------------------------------
     call ESMF_GridCompGet(GC, config=CF, __RC__) ! read paths to Mie tables from global config
@@ -653,7 +653,7 @@ contains
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE:  Initialize_ --- Initialize MAMchem
+! !IROUTINE:  Initialize_ --- Initialize MAM
 !
 ! !INTERFACE:
 !
@@ -675,7 +675,7 @@ contains
     type(ESMF_State), intent(inout)    :: EXPORT ! Export State
     integer, intent(out)               :: rc     ! Error return code:
                                                 !  0 - all is well
-                                                !  1 - 
+                                                !  1 -
 
 ! !DESCRIPTION: This is a simple ESMF wrapper.
 !
@@ -690,9 +690,9 @@ contains
 
     type(MAM_state), pointer      :: self               ! Legacy state
     type(ESMF_Grid)               :: GRID               ! Grid
-    type(ESMF_Config)             :: CF                 ! Universal Config 
+    type(ESMF_Config)             :: CF                 ! Universal Config
 
-    type(ESMF_State)              :: aero               ! 
+    type(ESMF_State)              :: aero               !
     type(ESMF_FieldBundle)        :: aero_state_aerosols!
     logical                       :: implements_aerosol_optics
     type(ESMF_Field)              :: field              ! field
@@ -722,7 +722,7 @@ contains
     integer                       :: n_species          ! number of aerosol species
     integer                       :: m, s               ! mode and species indexes
 
-    real                          :: hygroscopicity     ! hygroscopicity of the aerosol species 
+    real                          :: hygroscopicity     ! hygroscopicity of the aerosol species
     real                          :: solubility         ! solubility of the aerosol specie
 
     real                          :: f_scav             ! globally uniform convective scavenging coefficient, km-1
@@ -735,11 +735,11 @@ contains
     character(len=2), parameter   :: name_delimiter = ', '
 
 
-!  Declare pointers to IMPORT/EXPORT/INTERNAL states 
+!  Declare pointers to IMPORT/EXPORT/INTERNAL states
 !  -------------------------------------------------
     type(MAPL_MetaComp), pointer  :: mgState
     type(ESMF_State)              :: INTERNAL
-  
+
 !   Get my name and set-up traceback handle
 !   ---------------------------------------
     call ESMF_GridCompGet( GC, name=COMP_NAME, __RC__ )
@@ -760,7 +760,7 @@ contains
 !   -----------------------
     call MAPL_GenericInitialize ( GC, IMPORT, EXPORT, clock,  __RC__ )
 
-!   Get pointers to IMPORT/EXPORT/INTERNAL states 
+!   Get pointers to IMPORT/EXPORT/INTERNAL states
 !   ---------------------------------------------
     call MAPL_Get (mgState, INTERNAL_ESMF_STATE=INTERNAL, __RC__)
 
@@ -815,7 +815,7 @@ contains
     self%femisSS = Chem_UtilResVal(self%im_world, self%jm_world, f_hres(:), STATUS)
     VERIFY_(STATUS)
 
-   
+
     call ESMF_ConfigFindLabel(self%CF, 'dust_femis:', __RC__)
     do n = 1, size(f_hres)
         call ESMF_ConfigGetAttribute(self%CF, f_hres(n), __RC__)
@@ -912,15 +912,15 @@ contains
 !   ---------------------------------------------------
     call ESMF_StateGet(EXPORT, 'AERO', aero, __RC__)
 
-    ! This attribute indicates if the aerosol optics method is implemented or not. 
-    ! Radiation will not call the aerosol optics method unless this attribute is 
+    ! This attribute indicates if the aerosol optics method is implemented or not.
+    ! Radiation will not call the aerosol optics method unless this attribute is
     ! explicitly set to true.
 
-    implements_aerosol_optics = .true. 
+    implements_aerosol_optics = .true.
 
-    call ESMF_AttributeSet(aero, name  = 'implements_aerosol_optics_method', & 
+    call ESMF_AttributeSet(aero, name  = 'implements_aerosol_optics_method', &
                                  value = implements_aerosol_optics, __RC__)
-  
+
     COUPLING_TO_RADIATION: if (implements_aerosol_optics) then
 
         aero_state_aerosols = ESMF_FieldBundleCreate(name="AEROSOLS", __RC__)
@@ -945,11 +945,11 @@ contains
             do s = 1, n_species
                 species_name = self%scheme%mode(m)%species(s)%name
                 field_name  = trim(species_name) // '_A_' // trim(mode_name)
-           
+
                 call ESMF_StateGet(INTERNAL, trim(field_name), field, __RC__)
                 call ESMF_FieldBundleAdd(aero_state_aerosols, (/field/), __RC__)
             end do
-        end do 
+        end do
 
 
         ! TODO
@@ -986,7 +986,7 @@ contains
 
         ! add EXT to Aero state
         call ESMF_AttributeGet(aero, name='extinction_in_air_due_to_ambient_aerosol', value=field_name, __RC__)
-        if (field_name /= '') then 
+        if (field_name /= '') then
             field = MAPL_FieldCreateEmpty(trim(field_name), self%grid, __RC__)
 
             call MAPL_FieldAllocCommit(field, dims=MAPL_DimsHorzVert, location=MAPL_VLocationCenter, typekind=MAPL_R4, hw=0, __RC__)
@@ -1010,7 +1010,7 @@ contains
             call MAPL_FieldAllocCommit(field, dims=MAPL_DimsHorzVert, location=MAPL_VLocationCenter, typekind=MAPL_R4, hw=0, __RC__)
             call MAPL_StateAdd(aero, field, __RC__)
         end if
-       
+
         ! attach the aerosol optics method
         call ESMF_MethodAdd(aero, label='aerosol_optics', userRoutine=aerosol_optics, __RC__)
 
@@ -1021,15 +1021,15 @@ contains
 !   ---------------------------------------------------
     call ESMF_StateGet(EXPORT, 'AERO_ACI', aero_aci, __RC__)
 
-    ! This attribute indicates if the aerosol optics method is implemented or not. 
-    ! Radiation will not call the aerosol optics method unless this attribute is 
+    ! This attribute indicates if the aerosol optics method is implemented or not.
+    ! Radiation will not call the aerosol optics method unless this attribute is
     ! explicitly set to true.
 
-    implements_aap_method = .true. 
+    implements_aap_method = .true.
 
-    call ESMF_AttributeSet(aero_aci, name  = 'implements_aerosol_activation_properties_method', & 
+    call ESMF_AttributeSet(aero_aci, name  = 'implements_aerosol_activation_properties_method', &
                                      value = implements_aap_method, __RC__)
-  
+
     COUPLING_TO_CLOUD_MICROPHYSICS: if (implements_aap_method) then
 
         _ASSERT(self%scheme%n_modes > 0,'needs informative message')
@@ -1053,17 +1053,17 @@ contains
             do s = 1, n_species
                 species_name = self%scheme%mode(m)%species(s)%name
                 field_name  = trim(species_name) // '_A_' // trim(mode_name)
-           
+
                 call ESMF_StateGet(INTERNAL, trim(field_name), field, __RC__)
                 call ESMF_FieldBundleAdd(aero_state_aerosols, (/field/), __RC__)
             end do
         end do
 
-        ! Following the aerosol-cloud-interaction state protocol, next steps are:  
+        ! Following the aerosol-cloud-interaction state protocol, next steps are:
         !  - attach a list with the aerosol modes
         !  - attach required met fields
         !  - attach method that computes the aerosol activation properties
-    
+
         call ESMF_AttributeSet(aero_aci, name='number_of_aerosol_modes', value=self%scheme%n_modes, __RC__)
         call ESMF_AttributeSet(aero_aci, name='aerosol_modes', itemcount=self%scheme%n_modes, valuelist=aero_aci_modes, __RC__)
 
@@ -1180,7 +1180,7 @@ contains
 
         ! attach the aerosol optics method
         call ESMF_MethodAdd(aero_aci, label='aerosol_activation_properties', userRoutine=aerosol_activation_properties, __RC__)
-     
+
     end if COUPLING_TO_CLOUD_MICROPHYSICS
 
 
@@ -1230,7 +1230,7 @@ contains
         if (self%verbose .and. MAPL_AM_I_ROOT()) then
             print *, trim(Iam)//': Convective Scavenging Parameter of '//trim(mode_name)//' : ', f_scav
         end if
- 
+
         ! interstitial aerosol tracers
         field_name = 'NUM_A_' // trim(mode_name)
         call ESMF_StateGet(INTERNAL, trim(field_name), field, __RC__)
@@ -1304,12 +1304,12 @@ contains
     RETURN_(ESMF_SUCCESS)
 
     contains
-   
+
     subroutine PrintProcessFlag(name, state)
-        implicit none        
+        implicit none
         character(len=*), intent(in) :: name
         logical, intent(in)          :: state
-       
+
         character(len=*), parameter  :: fmt_flag  = "(4X, A12, X, '-', X, A3)"
 
         if (state) then
@@ -1370,8 +1370,8 @@ contains
                                'num_a3          ','ncl_a4          ','so4_a4          ','nh4_a4          ','num_a4          ', &
                                'dst_a5          ','so4_a5          ','nh4_a5          ','num_a5          ','ncl_a6          ', &
                                'so4_a6          ','nh4_a6          ','num_a6          ','dst_a7          ','so4_a7          ', &
-                               'nh4_a7          ','num_a7          ' /) 
-    
+                               'nh4_a7          ','num_a7          ' /)
+
         adv_mass(1:gas_pcnst) = (/ 34.013600_r8,    98.078400_r8,    64.064800_r8,    62.132400_r8,    17.028940_r8, &
                                    12.011000_r8,    96.063600_r8,    18.036340_r8,    12.011000_r8,    12.011000_r8, &
                                    12.011000_r8,    58.442468_r8,     1.007400_r8,    96.063600_r8,    18.036340_r8, &
@@ -1461,7 +1461,7 @@ contains
 
 #ifdef DEBUG
         if (MAPL_AM_I_ROOT()) then
-       
+
             print *, 'Interstitial aerosols:'
 
             do m = 1, ntot_amode
@@ -1508,7 +1508,7 @@ contains
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE:  Run_ --- Runs MAMchem
+! !IROUTINE:  Run_ --- Runs MAM
 !
 ! !INTERFACE:
 !
@@ -1517,7 +1517,7 @@ contains
 
 ! !USES:
     use MAPL_ConstantsMod,   only: r8 => MAPL_R8
-    use cam_logfile,         only: iulog    
+    use cam_logfile,         only: iulog
     use chem_mods,           only: gas_pcnst, adv_mass
 
     use modal_aero_data,     only: ntot_amode
@@ -1547,7 +1547,7 @@ contains
     type(ESMF_State), intent(inout)    :: EXPORT ! Export State
     integer, intent(out)               :: rc     ! Error return code:
                                                 !  0 - all is well
-                                                !  1 - 
+                                                !  1 -
 
 ! !DESCRIPTION: This is a simple ESMF wrapper.
 !
@@ -1559,10 +1559,10 @@ contains
 !-------------------------------------------------------------------------
 
                               __Iam__('Run_')
-   
+
     type(MAM_state), pointer      :: self               ! Legacy state
     type(ESMF_Grid)               :: GRID               ! Grid
-    type(ESMF_Config)             :: CF                 ! Universal Config 
+    type(ESMF_Config)             :: CF                 ! Universal Config
 
     type(MAPL_MetaComp), pointer  :: mgState            ! MAPL generic state
     type(ESMF_Alarm)              :: run_alarm
@@ -1578,7 +1578,7 @@ contains
 
     character(len=ESMF_MAXSTR)    :: comp_name
 
-    
+
     ! inputs to the aerosol microphysics core
     integer                         :: i, j
     integer                         :: iq
@@ -1587,9 +1587,9 @@ contains
     real, pointer, dimension(:,:,:) :: fcld
     real, pointer, dimension(:,:,:) :: Q
     real, pointer, dimension(:,:,:) :: T
-    real, pointer, dimension(:,:,:) :: RH 
+    real, pointer, dimension(:,:,:) :: RH
     real, pointer, dimension(:,:,:) :: delp
-    real, pointer, dimension(:,:,:) :: ple 
+    real, pointer, dimension(:,:,:) :: ple
     real, pointer, dimension(:,:,:) :: zle
 
 !   real, pointer, dimension(:,:,:) :: h2o2
@@ -1633,14 +1633,14 @@ contains
     real, pointer, dimension(:,:,:) :: ait_a_nh4
     real, pointer, dimension(:,:,:) :: ait_a_soa
     real, pointer, dimension(:,:,:) :: ait_a_ncl
-    
+
     real, pointer, dimension(:,:,:) :: ait_c_num
     real, pointer, dimension(:,:,:) :: ait_c_so4
     real, pointer, dimension(:,:,:) :: ait_c_nh4
     real, pointer, dimension(:,:,:) :: ait_c_soa
     real, pointer, dimension(:,:,:) :: ait_c_ncl
 
-    
+
     real, pointer, dimension(:,:,:) :: acc_a_num
     real, pointer, dimension(:,:,:) :: acc_a_so4
     real, pointer, dimension(:,:,:) :: acc_a_nh4
@@ -1666,7 +1666,7 @@ contains
     real, pointer, dimension(:,:,:) :: pcm_c_pom
     real, pointer, dimension(:,:,:) :: pcm_c_bc
 
- 
+
     real, pointer, dimension(:,:,:) :: fdu_a_num
     real, pointer, dimension(:,:,:) :: fdu_a_dst
     real, pointer, dimension(:,:,:) :: fdu_a_so4
@@ -1731,7 +1731,7 @@ contains
     real, pointer, dimension(:,:,:) :: cdu_dgn_dry
     real, pointer, dimension(:,:,:) :: cdu_dgn_wet
 
-    real, pointer, dimension(:,:,:) :: fss_a_wtr 
+    real, pointer, dimension(:,:,:) :: fss_a_wtr
     real, pointer, dimension(:,:,:) :: fss_dgn_dry
     real, pointer, dimension(:,:,:) :: fss_dgn_wet
 
@@ -1742,7 +1742,7 @@ contains
     ! pre-aqueous chemistry SO4 and NH4
     real, allocatable, dimension(:,:,:) :: ait_a_so4_
     real, allocatable, dimension(:,:,:) :: ait_a_nh4_
-    
+
     real, allocatable, dimension(:,:,:) :: acc_a_so4_
     real, allocatable, dimension(:,:,:) :: acc_a_nh4_
 
@@ -1766,10 +1766,10 @@ contains
     real, allocatable, dimension(:,:,:) :: q_coltend_coag_
     real, allocatable, dimension(:,:,:) :: q_coltend_nucl_
     real, allocatable, dimension(:,:,:) :: qqcw_coltend_rename_
-   
+
     real, pointer,     dimension(:,:)   :: q_coltend
 
-    ! wrap the aerosol microphisics core 
+    ! wrap the aerosol microphisics core
     integer, parameter  :: ncol = 1                     ! number of atmospheric columns
 
     integer  :: amc_do_gasaerexch
@@ -1811,7 +1811,7 @@ contains
     real(r8) :: amc_dgn_a_dry(pcols,pver,ntot_amode)
     real(r8) :: amc_dgn_a_wet(pcols,pver,ntot_amode)    ! dry & wet geo. mean dia. (m) of number distrib.
     real(r8) :: amc_wetdens_host(pcols,pver,ntot_amode) ! interstitial aerosol wet density (kg/m3)
-    real(r8) :: amc_q_coltendaa(pcols,pcnstxx,nqtendaa) ! column-integrated tendencies for condensation, renaming, coagulation, and nucleation 
+    real(r8) :: amc_q_coltendaa(pcols,pcnstxx,nqtendaa) ! column-integrated tendencies for condensation, renaming, coagulation, and nucleation
     real(r8) :: amc_qqcw_coltendaa(pcols,pcnstxx,nqqcwtendaa) ! --dito-- but for cloud-borne aerosols
     real(r8) :: amc_qaerwat(pcols,pver,ntot_amode)      ! optional, aerosol water mixing ratio (kg/kg)
 
@@ -1829,10 +1829,10 @@ contains
 
     real, parameter :: mw_air = 28.97                   ! molar mass of dry air, g mol-1
 
-!   Declare pointers to IMPORT/EXPORT/INTERNAL states 
+!   Declare pointers to IMPORT/EXPORT/INTERNAL states
 !   -------------------------------------------------
     type(ESMF_State)              :: INTERNAL
-  
+
 !   Get my name and set-up traceback handle
 !   ---------------------------------------
     call ESMF_GridCompGet( GC, name=comp_name, __RC__ )
@@ -1845,7 +1845,7 @@ contains
     call MAPL_TimerOn(mgState, 'TOTAL', __RC__)
     call MAPL_TimerOn(mgState, 'RUN',   __RC__)
 
-!   Get pointers to IMPORT/EXPORT/INTERNAL states 
+!   Get pointers to IMPORT/EXPORT/INTERNAL states
 !   ---------------------------------------------
     call MAPL_Get (mgState, INTERNAL_ESMF_STATE=INTERNAL, __RC__)
 
@@ -1909,7 +1909,7 @@ contains
 
     ! save pre-aqueous phase SO4 and NH4
     allocate(ait_a_so4_(im,jm,lm), __STAT__)
-    allocate(ait_a_nh4_(im,jm,lm), __STAT__)    
+    allocate(ait_a_nh4_(im,jm,lm), __STAT__)
     allocate(acc_a_so4_(im,jm,lm), __STAT__)
     allocate(acc_a_nh4_(im,jm,lm), __STAT__)
     allocate(fdu_a_so4_(im,jm,lm), __STAT__)
@@ -1939,7 +1939,7 @@ contains
     call MAPL_TimerOff(mgState, '-AQUEOUS_CHEM', __RC__)
 
 
-    ! colmn-integrated diagnostics: tendencies due to condensation, 
+    ! colmn-integrated diagnostics: tendencies due to condensation,
     ! rename, coagulation and nucleation
     allocate(q_coltend_cond_(im,jm,pcnstxx),      __STAT__)
     allocate(q_coltend_rename_(im,jm,pcnstxx),    __STAT__)
@@ -2012,7 +2012,7 @@ contains
 
     amc_nstep   = 99                            ! model time-step number
     amc_lchnk   = 0                             ! chunk identifier
-    amc_latndx  = 1 
+    amc_latndx  = 1
     amc_lonndx  = 1                             ! lat and lon indices
     amc_loffset = 0
 
@@ -2078,10 +2078,10 @@ contains
 
     call MAPL_GetPointer(internal, ait_c_num, 'NUM_C_AIT', __RC__)
     call MAPL_GetPointer(internal, ait_c_so4, 'SU_C_AIT' , __RC__)
-    call MAPL_GetPointer(internal, ait_c_nh4, 'AMM_C_AIT', __RC__) 
+    call MAPL_GetPointer(internal, ait_c_nh4, 'AMM_C_AIT', __RC__)
     call MAPL_GetPointer(internal, ait_c_soa, 'SOA_C_AIT', __RC__)
     call MAPL_GetPointer(internal, ait_c_ncl, 'SS_C_AIT' , __RC__)
-    
+
     ! accumulation
     call MAPL_GetPointer(internal, acc_a_num, 'NUM_A_ACC', __RC__)
     call MAPL_GetPointer(internal, acc_a_so4, 'SU_A_ACC' , __RC__)
@@ -2090,7 +2090,7 @@ contains
     call MAPL_GetPointer(internal, acc_a_pom, 'POM_A_ACC', __RC__)
     call MAPL_GetPointer(internal, acc_a_bc,  'BC_A_ACC' , __RC__)
     call MAPL_GetPointer(internal, acc_a_ncl, 'SS_A_ACC' , __RC__)
-    
+
     call MAPL_GetPointer(internal, acc_c_num, 'NUM_C_ACC', __RC__)
     call MAPL_GetPointer(internal, acc_c_so4, 'SU_C_ACC' , __RC__)
     call MAPL_GetPointer(internal, acc_c_nh4, 'AMM_C_ACC', __RC__)
@@ -2108,7 +2108,7 @@ contains
     call MAPL_GetPointer(internal, pcm_c_pom, 'POM_C_PCM', __RC__)
     call MAPL_GetPointer(internal, pcm_c_bc,  'BC_C_PCM',  __RC__)
 
-    ! fine dust 
+    ! fine dust
     call MAPL_GetPointer(internal, fdu_a_num, 'NUM_A_FDU', __RC__)
     call MAPL_GetPointer(internal, fdu_a_dst, 'DU_A_FDU' , __RC__)
     call MAPL_GetPointer(internal, fdu_a_so4, 'SU_A_FDU' , __RC__)
@@ -2119,7 +2119,7 @@ contains
     call MAPL_GetPointer(internal, fdu_c_so4, 'SU_C_FDU' , __RC__)
     call MAPL_GetPointer(internal, fdu_c_nh4, 'AMM_C_FDU', __RC__)
 
-    ! caorse dust 
+    ! caorse dust
     call MAPL_GetPointer(internal, cdu_a_num, 'NUM_A_CDU', __RC__)
     call MAPL_GetPointer(internal, cdu_a_dst, 'DU_A_CDU' , __RC__)
     call MAPL_GetPointer(internal, cdu_a_so4, 'SU_A_CDU' , __RC__)
@@ -2141,7 +2141,7 @@ contains
     call MAPL_GetPointer(internal, fss_c_so4, 'SU_C_FSS' , __RC__)
     call MAPL_GetPointer(internal, fss_c_nh4, 'AMM_C_FSS', __RC__)
 
-    ! caorse seasalt 
+    ! caorse seasalt
     call MAPL_GetPointer(internal, css_a_num, 'NUM_A_CSS', __RC__)
     call MAPL_GetPointer(internal, css_a_ncl, 'SS_A_CSS' , __RC__)
     call MAPL_GetPointer(internal, css_a_so4, 'SU_A_CSS' , __RC__)
@@ -2155,7 +2155,7 @@ contains
     ! size
     call MAPL_GetPointer(internal, ait_dgn_dry, 'DGN_DRY_AIT', __RC__)
     call MAPL_GetPointer(internal, ait_dgn_wet, 'DGN_WET_AIT', __RC__)
-    call MAPL_GetPointer(internal, acc_dgn_dry, 'DGN_DRY_ACC', __RC__)  
+    call MAPL_GetPointer(internal, acc_dgn_dry, 'DGN_DRY_ACC', __RC__)
     call MAPL_GetPointer(internal, acc_dgn_wet, 'DGN_WET_ACC', __RC__)
     call MAPL_GetPointer(internal, pcm_dgn_dry, 'DGN_DRY_PCM', __RC__)
     call MAPL_GetPointer(internal, pcm_dgn_wet, 'DGN_WET_PCM', __RC__)
@@ -2270,8 +2270,8 @@ contains
             amc_rh(ncol, :)   = RH(i,j,:)               ! relative humidity
 
             ! current tracer mixing ratios (TMRs)
-            
-            amc_qqcw(:ncol,:pver,:pcnstxx)            = tiny(0.0) 
+
+            amc_qqcw(:ncol,:pver,:pcnstxx)            = tiny(0.0)
             amc_qqcw_precldchem(:ncol,:pver,:pcnstxx) = tiny(0.0)  ! qqcw TMRs before cloud chemistry
 
 
@@ -2282,7 +2282,7 @@ contains
             amc_q(ncol,:,i_dms)    = tiny(0.0)               ! dms
             amc_q(ncol,:,i_nh3)    = nh3(i,j,:)
             amc_q(ncol,:,i_soag)   = soa_g(i,j,:)
-            ! accumulation mode 
+            ! accumulation mode
             amc_q(ncol,:,i_so4_a1) = acc_a_so4(i,j,:) * (mw_air / adv_mass(i_so4_a1))
             amc_q(ncol,:,i_nh4_a1) = acc_a_nh4(i,j,:) * (mw_air / adv_mass(i_nh4_a1))
             amc_q(ncol,:,i_pom_a1) = acc_a_pom(i,j,:) * (mw_air / adv_mass(i_pom_a1))
@@ -2296,7 +2296,7 @@ contains
             amc_q(ncol,:,i_soa_a2) = ait_a_soa(i,j,:) * (mw_air / adv_mass(i_soa_a2))
             amc_q(ncol,:,i_ncl_a2) = ait_a_ncl(i,j,:) * (mw_air / adv_mass(i_ncl_a2))
             amc_q(ncol,:,i_num_a2) = ait_a_num(i,j,:) *  mw_air
-            ! primary carbon mode 
+            ! primary carbon mode
             amc_q(ncol,:,i_pom_a3) = pcm_a_pom(i,j,:) * (mw_air / adv_mass(i_pom_a3))
             amc_q(ncol,:,i_bc_a3)  = pcm_a_bc(i,j,:)  * (mw_air / adv_mass(i_bc_a3))
             amc_q(ncol,:,i_num_a3) = pcm_a_num(i,j,:) *  mw_air
@@ -2361,7 +2361,7 @@ contains
             amc_q_precldchem(ncol,:,i_so4_a7) = cdu_a_so4_(i,j,:) * (mw_air / adv_mass(i_so4_a7))
             amc_q_precldchem(ncol,:,i_nh4_a7) = cdu_a_nh4_(i,j,:) * (mw_air / adv_mass(i_nh4_a7))
 
-            
+
             amc_dgn_a_dry(pcols,:,1) = acc_dgn_dry(i,j,:)          ! dry geo. mean dia. (m) of number PSD
             amc_dgn_a_dry(pcols,:,2) = ait_dgn_dry(i,j,:)
             amc_dgn_a_dry(pcols,:,3) = pcm_dgn_dry(i,j,:)
@@ -2407,7 +2407,7 @@ contains
             !    2. renaming after "continuous growth"
             !    3. primary carbon aging
 
-            call modal_aero_amicphys_intr(amc_do_gasaerexch,   & 
+            call modal_aero_amicphys_intr(amc_do_gasaerexch,   &
                                           amc_do_rename,       &
                                           amc_do_newnuc,       &
                                           amc_do_coag,         &
@@ -2459,7 +2459,7 @@ contains
             ait_a_soa(i,j,:) = amc_q(ncol,:,i_soa_a2) * (adv_mass(i_soa_a2) / mw_air)
             ait_a_ncl(i,j,:) = amc_q(ncol,:,i_ncl_a2) * (adv_mass(i_ncl_a2) / mw_air)
             ait_a_num(i,j,:) = amc_q(ncol,:,i_num_a2) / mw_air
-            ! primary carbon mode 
+            ! primary carbon mode
             pcm_a_pom(i,j,:) = amc_q(ncol,:,i_pom_a3) * (adv_mass(i_pom_a3) / mw_air)
             pcm_a_bc(i,j,:)  = amc_q(ncol,:,i_bc_a3)  * (adv_mass(i_bc_a3)  / mw_air)
             pcm_a_num(i,j,:) = amc_q(ncol,:,i_num_a3) / mw_air
@@ -2497,10 +2497,10 @@ contains
 
     call MAPL_TimerOff(mgState, '-MICROPHYSICS', __RC__)
 
-    
+
     nullify(q_coltend); call MAPL_GetPointer(export, q_coltend, 'DDT_NUM_A_ACC_COND', __RC__)
     if (associated(q_coltend)) q_coltend = q_coltend_cond_(:,:,i_num_a1)
-    
+
     nullify(q_coltend); call MAPL_GetPointer(export, q_coltend, 'DDT_NUM_A_AIT_COND', __RC__)
     if (associated(q_coltend)) q_coltend = q_coltend_cond_(:,:,i_num_a2)
 
@@ -2518,11 +2518,11 @@ contains
 
     nullify(q_coltend); call MAPL_GetPointer(export, q_coltend, 'DDT_NUM_A_CDU_COND', __RC__)
     if (associated(q_coltend)) q_coltend = q_coltend_cond_(:,:,i_num_a7)
-    
+
 
     ! free the memory used to hold the pre-aqueous SO4 and NH4
     deallocate(ait_a_so4_, __STAT__)
-    deallocate(ait_a_nh4_, __STAT__)    
+    deallocate(ait_a_nh4_, __STAT__)
     deallocate(acc_a_so4_, __STAT__)
     deallocate(acc_a_nh4_, __STAT__)
     deallocate(fdu_a_so4_, __STAT__)
@@ -2542,7 +2542,7 @@ contains
     deallocate(qqcw_coltend_rename_, __STAT__)
 
 
-!   Emissions:  note that emissions are done after the aerosol microphysics 
+!   Emissions:  note that emissions are done after the aerosol microphysics
 !   in order to obtain and apply the pre-gas and pre-aqueous phase mixing ratios
 !   required by the later
 !   ---------------------
@@ -2587,7 +2587,7 @@ contains
             amc_q(ncol,:,i_nh3)    = nh3(i,j,:)
             amc_q(ncol,:,i_soag)   = soa_g(i,j,:)
             ! accumulation mode
-            amc_q(ncol,:,i_so4_a1) = acc_a_so4(i,j,:) 
+            amc_q(ncol,:,i_so4_a1) = acc_a_so4(i,j,:)
             amc_q(ncol,:,i_nh4_a1) = acc_a_nh4(i,j,:)
             amc_q(ncol,:,i_pom_a1) = acc_a_pom(i,j,:)
             amc_q(ncol,:,i_soa_a1) = acc_a_soa(i,j,:)
@@ -2600,7 +2600,7 @@ contains
             amc_q(ncol,:,i_soa_a2) = ait_a_soa(i,j,:)
             amc_q(ncol,:,i_ncl_a2) = ait_a_ncl(i,j,:)
             amc_q(ncol,:,i_num_a2) = ait_a_num(i,j,:)
-            ! primary carbon mode 
+            ! primary carbon mode
             amc_q(ncol,:,i_pom_a3) = pcm_a_pom(i,j,:)
             amc_q(ncol,:,i_bc_a3)  = pcm_a_bc(i,j,:)
             amc_q(ncol,:,i_num_a3) = pcm_a_num(i,j,:)
@@ -2622,13 +2622,13 @@ contains
             ! coarse dust mode
             amc_q(ncol,:,i_dst_a7) = cdu_a_dst(i,j,:)
             amc_q(ncol,:,i_so4_a7) = cdu_a_so4(i,j,:)
-            amc_q(ncol,:,i_nh4_a7) = cdu_a_nh4(i,j,:) 
+            amc_q(ncol,:,i_nh4_a7) = cdu_a_nh4(i,j,:)
             amc_q(ncol,:,i_num_a7) = cdu_a_num(i,j,:)
 
-            
-            amc_qqcw(:ncol,:pver,:pcnstxx) = tiny(0.0) 
 
-            
+            amc_qqcw(:ncol,:pver,:pcnstxx) = tiny(0.0)
+
+
             amc_dgn_a_dry(pcols,:,1) = acc_dgn_dry(i,j,:)          ! dry geo. mean dia. (m) of number PSD
             amc_dgn_a_dry(pcols,:,2) = ait_dgn_dry(i,j,:)
             amc_dgn_a_dry(pcols,:,3) = pcm_dgn_dry(i,j,:)
@@ -2655,7 +2655,7 @@ contains
                                          amc_dqdt,      &
                                          amc_dgn_a_dry, &
                                          amc_deltat,    &
-                                         amc_dotend,    & 
+                                         amc_dotend,    &
                                          self%verbose)
 
             ! apply the tendencies due to the mode manager mechanism
@@ -2671,7 +2671,7 @@ contains
             soa_g(i,j,:)     = amc_q(ncol,:,i_soag)
 
             ! accumulation mode
-            acc_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a1) 
+            acc_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a1)
             acc_a_nh4(i,j,:) = amc_q(ncol,:,i_nh4_a1)
             acc_a_pom(i,j,:) = amc_q(ncol,:,i_pom_a1)
             acc_a_soa(i,j,:) = amc_q(ncol,:,i_soa_a1)
@@ -2684,13 +2684,13 @@ contains
             ait_a_soa(i,j,:) = amc_q(ncol,:,i_soa_a2)
             ait_a_ncl(i,j,:) = amc_q(ncol,:,i_ncl_a2)
             ait_a_num(i,j,:) = amc_q(ncol,:,i_num_a2)
-            ! primary carbon mode 
+            ! primary carbon mode
             pcm_a_pom(i,j,:) = amc_q(ncol,:,i_pom_a3)
             pcm_a_bc(i,j,:)  = amc_q(ncol,:,i_bc_a3)
             pcm_a_num(i,j,:) = amc_q(ncol,:,i_num_a3)
             ! fine seasalt mode
-            fss_a_ncl(i,j,:) = amc_q(ncol,:,i_ncl_a4) 
-            fss_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a4) 
+            fss_a_ncl(i,j,:) = amc_q(ncol,:,i_ncl_a4)
+            fss_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a4)
             fss_a_nh4(i,j,:) = amc_q(ncol,:,i_nh4_a4)
             fss_a_num(i,j,:) = amc_q(ncol,:,i_num_a4)
             ! fine dust mode
@@ -2704,8 +2704,8 @@ contains
             css_a_nh4(i,j,:) = amc_q(ncol,:,i_nh4_a6)
             css_a_num(i,j,:) = amc_q(ncol,:,i_num_a6)
             ! coarse dust mode
-            cdu_a_dst(i,j,:) = amc_q(ncol,:,i_dst_a7) 
-            cdu_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a7) 
+            cdu_a_dst(i,j,:) = amc_q(ncol,:,i_dst_a7)
+            cdu_a_so4(i,j,:) = amc_q(ncol,:,i_so4_a7)
             cdu_a_nh4(i,j,:) = amc_q(ncol,:,i_nh4_a7)
             cdu_a_num(i,j,:) = amc_q(ncol,:,i_num_a7)
 
@@ -2774,7 +2774,7 @@ contains
 !
 !   Wet removal - large scale wet scavenging
 !   ----------------------------------------
-    call MAPL_TimerOn(mgState, '-REMOVAL',      __RC__) 
+    call MAPL_TimerOn(mgState, '-REMOVAL',      __RC__)
     call MAPL_TimerOn(mgState, '--REMOVAL_WET', __RC__)
 
     if (self%wet_removal) then
@@ -2784,7 +2784,7 @@ contains
     call MAPL_TimerOff(mgState, '--REMOVAL_WET', __RC__)
     call MAPL_TimerOff(mgState, '-REMOVAL',      __RC__)
 
-!  
+!
 !   Update the aerosol size and absorbed water
 !   ------------------------------------------
     call MAPL_TimerOn(mgState, '-HYGROSCOPIC_GROWTH', __RC__)
@@ -2804,13 +2804,13 @@ contains
     call MAPL_TimerOff(mgState, '-HYGROSCOPIC_GROWTH', __RC__)
 
 
-!   Diagnostics 
+!   Diagnostics
 !   -----------------
-!   NOTE : The order of which the processes are done will have 
+!   NOTE : The order of which the processes are done will have
 !          some impact on the dignostic fields
 !   -----------------------------------------------------------
     call MAPL_TimerOn(mgState, '-DIAGNOSTICS', __RC__)
-    
+
     call MAPL_TimerOn(mgState,  '--DIAGNOSTICS_SEASALT', __RC__)
     call MAM_SS_Diagnostics(self%scheme, import, export, self%qa, self%dt, __RC__)
     call MAPL_TimerOff(mgState, '--DIAGNOSTICS_SEASALT', __RC__)
@@ -2857,7 +2857,7 @@ contains
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE:  Finalize_ --- Finalize MAMchem
+! !IROUTINE:  Finalize_ --- Finalize MAM
 !
 ! !INTERFACE:
 !
@@ -2879,7 +2879,7 @@ contains
    type(ESMF_State), intent(inout)    :: EXPORT ! Export State
    integer, intent(out)               :: rc     ! Error return code:
                                                 !  0 - all is well
-                                                !  1 - 
+                                                !  1 -
 
 ! !DESCRIPTION: This is a simple ESMF wrapper.
 !
@@ -2891,10 +2891,10 @@ contains
 !-------------------------------------------------------------------------
 
                               __Iam__('Finalize_')
-   
+
     type(MAM_state), pointer      :: self               ! Legacy state
     type(ESMF_Grid)               :: GRID               ! Grid
-    type(ESMF_Config)             :: CF                 ! Universal Config 
+    type(ESMF_Config)             :: CF                 ! Universal Config
 
     integer                       :: im_World, jm_World ! Global 2D dimensions
     integer                       :: im, jm, lm         ! 3D Dimensions
@@ -2974,7 +2974,7 @@ contains
 
     type(MAM_state), pointer           :: myState            ! Legacy state
     type(ESMF_Grid),     intent(out)   :: GRID               ! Grid
-    type(ESMF_Config),   intent(out)   :: CF                 ! Universal Config 
+    type(ESMF_Config),   intent(out)   :: CF                 ! Universal Config
 
     integer, intent(out)               :: im_World, jm_World ! Global 2D Dimensions
     integer, intent(out)               :: im, jm, lm         ! 3D Dimensions
@@ -3097,9 +3097,9 @@ contains
     integer, intent(out)                   :: rc                  ! error return code:
                                                                   !    0 - all is well
                                                                   !    1 -
- 
-! !DESCRIPTION: This routine constructs short and long names of aerosol tracer 
-!               in one of the MAM modes depending on its type and 
+
+! !DESCRIPTION: This routine constructs short and long names of aerosol tracer
+!               in one of the MAM modes depending on its type and
 !               attachment state.
 !
 ! !REVISION HISTORY:
@@ -3123,7 +3123,7 @@ contains
 
     _ASSERT(attachment_state == 'interstitial' .or. attachment_state == 'cloud-borne','needs informative message')
     _ASSERT(type == 'number' .or. type == 'mass','needs informative message')
-    
+
 
     if (type == 'number') then
         name = 'NUM'
@@ -3138,8 +3138,8 @@ contains
     else
         state = '_C_'
     end if
-            
-   
+
+
     short_name = trim(name) // state // trim(mode_short_name)
     long_name  = buff // trim(attachment_state) // ' aerosol particles in ' // trim(mode_long_name) // ' mode'
 
@@ -3181,7 +3181,7 @@ contains
     integer, intent(out)                   :: rc         ! error return code:
                                                          !    0 - all is well
                                                          !    1 -
- 
+
 ! !DESCRIPTION: This routine updates mass fields due to aqueos chemistry processes.
 !
 ! !REVISION HISTORY:
@@ -3212,7 +3212,7 @@ contains
     integer :: in_acc, in_fss, in_css, in_fdu, in_cdu   ! index of number mixing raio
     integer :: iq_acc, iq_fss, iq_css, iq_fdu, iq_cdu   ! index of mass mixing raio
 
-!   Parameters 
+!   Parameters
 !   ----------
     real, parameter :: mw_air = 28.965           ! molar mass of dry air, g mol-1
     real, parameter :: mw_SO4 = 96.07            ! molar mass of sulfate, g mol-1
@@ -3223,8 +3223,8 @@ contains
 !   --------------------------
     rc = ESMF_SUCCESS
 
-    _ASSERT(self%id == MAM7_SCHEME,'needs informative message') 
- 
+    _ASSERT(self%id == MAM7_SCHEME,'needs informative message')
+
 
 !   Get Imports
 !   --------------
@@ -3235,7 +3235,7 @@ contains
     call MAPL_GetPointer(import, pSO4_aq, 'pSO4_aq',   __RC__)
     call MAPL_GetPointer(import, pNH4_aq, 'pNH4_aq',   __RC__)
 
-    
+
     if ((.not. associated(pSO4_aq)) .or. (.not. associated(pNH4_aq))) then
         print *, 'Skipping MAM::AqueousChemistry()'
         RETURN_(ESMF_SUCCESS)
@@ -3244,7 +3244,7 @@ contains
 
 !   Get Exports
 !   -----------
-    
+
 
 !   Local dimensions
 !   ----------------
@@ -3309,7 +3309,7 @@ contains
     qa%r3(iq_fdu)%q = qa%r3(iq_fdu)%q + (f * qa%r3(in_fdu)%q)
     qa%r3(iq_cdu)%q = qa%r3(iq_cdu)%q + (f * qa%r3(in_cdu)%q)
 
- 
+
     ! partition NH4
     iq_acc = MAPL_SimpleBundleGetIndex(qa, 'AMM_A_ACC', 3, __RC__)
     iq_fss = MAPL_SimpleBundleGetIndex(qa, 'AMM_A_FSS', 3, __RC__)
@@ -3369,7 +3369,7 @@ contains
     integer, intent(out)                   :: rc         ! error return code:
                                                          !    0 - all is well
                                                          !    1 -
- 
+
 ! !DESCRIPTION: This routine computes column integrated (dry) mass fields.
 !
 ! !REVISION HISTORY:
@@ -3406,8 +3406,8 @@ contains
 !   --------------------------
     rc = ESMF_SUCCESS
 
-    _ASSERT(self%id == MAM7_SCHEME .or. self%id == MAM3_SCHEME,'needs informative message') 
- 
+    _ASSERT(self%id == MAM7_SCHEME .or. self%id == MAM3_SCHEME,'needs informative message')
+
 
 !   Get Imports
 !   --------------
@@ -3455,7 +3455,7 @@ contains
             field_name  = trim(species_name) // '_A_' // trim(mode_name)
 
             i = MAPL_SimpleBundleGetIndex(qa, trim(field_name), 3, __RC__)
-           
+
             if (associated(colmass)) then
                 do k = 1, km
                     colmass(:,:) = colmass(:,:) + qa%r3(i)%q(:,:,k) * delp(:,:,k)/grav
@@ -3501,7 +3501,7 @@ contains
     integer, intent(out)                   :: rc         ! error return code:
                                                          !    0 - all is well
                                                          !    1 -
- 
+
 ! !DESCRIPTION: This routine computes column integrated (dry) mass fields.
 !
 ! !REVISION HISTORY:
@@ -3538,8 +3538,8 @@ contains
 !   --------------------------
     rc = ESMF_SUCCESS
 
-    _ASSERT(self%id == MAM7_SCHEME .or. self%id == MAM3_SCHEME,'needs informative message') 
- 
+    _ASSERT(self%id == MAM7_SCHEME .or. self%id == MAM3_SCHEME,'needs informative message')
+
 
 !   Get Imports
 !   --------------
@@ -3582,7 +3582,7 @@ contains
         if (associated(ptr_2d)) then
             field_name  = 'NUM_A_' // trim(mode_name)
             i = MAPL_SimpleBundleGetIndex(qa, trim(field_name), 3, __RC__)
-           
+
             ptr_2d(:,:) = qa%r3(i)%q(:,:,km) * rhoa(:,:,km)
         end if
     end do
@@ -3595,7 +3595,7 @@ contains
         if (associated(ptr_2d)) then
             field_name  = 'WTR_A_' // trim(mode_name)
             i = MAPL_SimpleBundleGetIndex(qa, trim(field_name), 3, __RC__)
-           
+
             ptr_2d(:,:) = qa%r3(i)%q(:,:,km) * rhoa(:,:,km)
         end if
     end do
@@ -3609,7 +3609,7 @@ contains
         if (associated(ptr_2d)) then
             field_name  = 'DGN_DRY_' // trim(mode_name)
             i = MAPL_SimpleBundleGetIndex(Da, trim(field_name), 3, __RC__)
-           
+
             ptr_2d(:,:) = Da%r3(i)%q(:,:,km)
         end if
     end do
@@ -3622,7 +3622,7 @@ contains
         if (associated(ptr_2d)) then
             field_name  = 'DGN_WET_' // trim(mode_name)
             i = MAPL_SimpleBundleGetIndex(Da, trim(field_name), 3, __RC__)
-           
+
             ptr_2d(:,:) = Da%r3(i)%q(:,:,km)
         end if
     end do
@@ -3682,7 +3682,7 @@ contains
     integer, intent(out)                   :: rc         ! error return code:
                                                          !    0 - all is well
                                                          !    1 -
- 
+
 ! !DESCRIPTION: This routine computes aerosol optical thickness.
 !
 ! !REVISION HISTORY:
@@ -3725,7 +3725,7 @@ contains
 
     integer                                 :: band
 
-  
+
     integer                                 :: STATUS
     character(len=ESMF_MAXSTR)              :: Iam
 
@@ -3778,9 +3778,9 @@ contains
 
     ! Radiation band
     ! --------------
-    band = 7   ! 550nm 
+    band = 7   ! 550nm
 
-    ! Pressure at layer edges 
+    ! Pressure at layer edges
     ! ------------------------
 
 
@@ -3793,7 +3793,7 @@ contains
   allocate(ext_(i1:i2,j1:j2,km), &
            sca_(i1:i2,j1:j2,km), &
            asy_(i1:i2,j1:j2,km), __STAT__)
-  
+
 
   ext = 0.0
   sca = 0.0
@@ -3804,8 +3804,8 @@ contains
   ! compute ext, sca and ssa from aerosols in aitken mode; su, amm, soa, ss
   nc = 4 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_AIT', 3, __RC__)
@@ -3830,8 +3830,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_AIT', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_ait, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -3847,10 +3847,10 @@ contains
 
 
   ! compute ext, sca and ssa from aerosols in accumulation mode: su, amm, soa, pom, bc, ss
-  nc = 6 + 1 
+  nc = 6 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_ACC', 3, __RC__)
@@ -3883,8 +3883,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_ACC', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_acc, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -3902,8 +3902,8 @@ contains
   ! compute ext, sca and ssa from aerosols in primary carbon mode: pom, bc
   nc = 2 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_PCM', 3, __RC__)
@@ -3920,8 +3920,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_PCM', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_pcm, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -3939,8 +3939,8 @@ contains
   ! compute ext, sca and ssa from aerosols in fine seasalt mode: su, amm, ss
   nc = 3 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_FSS', 3, __RC__)
@@ -3961,8 +3961,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_FSS', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_fss, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -3980,8 +3980,8 @@ contains
   ! compute ext, sca and ssa from aerosols in coarse seasalt mode: su, amm, ss; lut = ('water', 'su', 'amm', 'ss')
   nc = 3 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_CSS', 3, __RC__)
@@ -4002,8 +4002,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_CSS', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_css, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4021,8 +4021,8 @@ contains
   ! compute ext, sca and ssa from aerosols in fine dust mode: su, amm, du; lut = ('water', 'su', 'amm', 'du')
   nc = 3 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_FDU', 3, __RC__)
@@ -4043,8 +4043,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_FDU', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_fdu, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4062,8 +4062,8 @@ contains
   ! compute ext, sca and ssa from aerosols in coarse dust mode: su, amm, du; lut = ('water', 'su', 'amm', 'du')
   nc = 3 + 1
   allocate(qa_(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa_ = 0.0 
+
+  qa_ = 0.0
   density = 0.0
 
   i_mmr = MAPL_SimpleBundleGetIndex(qa, 'WTR_A_CDU', 3, __RC__)
@@ -4084,8 +4084,8 @@ contains
 
   i_dwet = MAPL_SimpleBundleGetIndex(Da, 'DGN_WET_CDU', 3, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(mie_cdu, band, qa_, density, Da%r3(i_dwet)%q, delp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4119,8 +4119,8 @@ contains
 logical function isDataDrivenGC_(GC, rc)
    type(ESMF_GridComp), intent(inout) :: GC
    integer, intent(out)               :: rc
- 
-!  local 
+
+!  local
    character(len=ESMF_MAXSTR)         :: IAm
    integer                            :: STATUS
 
@@ -4130,9 +4130,9 @@ logical function isDataDrivenGC_(GC, rc)
 
    rc = ESMF_SUCCESS
 
-   call ESMF_GridCompGet(GC, name=comp_name, __RC__)   
+   call ESMF_GridCompGet(GC, name=comp_name, __RC__)
    i = index(trim(comp_name), trim(modifier), back=.true.)
- 
+
    if (i > 0) then
        ! lets be strict
        if (comp_name(i:) == modifier) then
@@ -4161,11 +4161,11 @@ end function isDataDrivenGC_
                                     MAM_SOA_COMPONENT_DENSITY,          &
                                     MAM_POM_COMPONENT_DENSITY
 
-  implicit none 
+  implicit none
 
 
 
-  
+
 
 ! Arguments
 ! ---------
@@ -4200,7 +4200,7 @@ end function isDataDrivenGC_
 
   integer                                 :: band
 
-  
+
   integer                                 :: STATUS
   character(len=ESMF_MAXSTR)              :: Iam
 
@@ -4213,7 +4213,7 @@ end function isDataDrivenGC_
 ! --------------
   call ESMF_AttributeGet(state, name='band_for_aerosol_optics', value=band, __RC__)
 
-! Pressure at layer edges 
+! Pressure at layer edges
 ! ------------------------
   call ESMF_AttributeGet(state, name='air_pressure_for_aerosol_optics', value=field_name, __RC__)
   call MAPL_GetPointer(state, ple, trim(field_name), __RC__)
@@ -4230,7 +4230,7 @@ end function isDataDrivenGC_
   i1 = lbound(rh, 1); i2 = ubound(rh, 1)
   j1 = lbound(rh, 2); j2 = ubound(rh, 2)
                       km = ubound(rh, 3)
-  
+
   call ESMF_StateGet(state, 'AEROSOLS', aerosols, __RC__)
 
 
@@ -4246,7 +4246,7 @@ end function isDataDrivenGC_
   allocate(ext_(i1:i2,j1:j2,km), &
            sca_(i1:i2,j1:j2,km), &
            asy_(i1:i2,j1:j2,km), __STAT__)
-  
+
 
   ext = 0.0
   sca = 0.0
@@ -4257,8 +4257,8 @@ end function isDataDrivenGC_
   ! compute ext, sca and ssa from aerosols in aitken mode; su, amm, soa, ss
   nc = 4 + 1
   allocate(qa(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
-  qa = 0.0 
+
+  qa = 0.0
   density = 0.0
 
   call ESMFL_BundleGetPointerToData(aerosols, 'WTR_A_AIT', q, __RC__)
@@ -4283,8 +4283,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_AIT', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(1), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4314,7 +4314,7 @@ end function isDataDrivenGC_
   qa(3,:,:,:) = q
   density(3)  = MAM_AMMONIUM_COMPONENT_DENSITY
 
-  call ESMFL_BundleGetPointerToData(aerosols, 'SOA_A_ACC', q, __RC__)      
+  call ESMFL_BundleGetPointerToData(aerosols, 'SOA_A_ACC', q, __RC__)
   qa(4,:,:,:) = q
   density(4)  = MAM_SOA_COMPONENT_DENSITY
 
@@ -4332,8 +4332,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_ACC', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(2), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4362,8 +4362,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_PCM', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(3), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4396,8 +4396,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_FSS', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(4), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4430,8 +4430,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_CSS', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(5), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4445,7 +4445,7 @@ end function isDataDrivenGC_
   ! compute ext, sca and ssa from aerosols in fine dust mode: su, amm, du; lut = ('water', 'su', 'amm', 'du')
   nc = 3 + 1
   allocate(qa(nc,i1:i2,j1:j2,km), density(nc), __STAT__)
- 
+
   call ESMFL_BundleGetPointerToData(aerosols, 'WTR_A_FDU', q, __RC__)
   qa(1,:,:,:) = q
   density(1)  = MAM_WATER_COMPONENT_DENSITY
@@ -4464,10 +4464,10 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_FDU', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
- 
+
   call MAML_OpticsInterpolate(MAM7_MieTable(6), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
 
   ext = ext + ext_
@@ -4498,8 +4498,8 @@ end function isDataDrivenGC_
 
   call ESMFL_BundleGetPointerToData(aerosols, 'DGN_WET_CDU', dgn_wet, __RC__)
 
-  ext_ = 0.0 
-  sca_ = 0.0 
+  ext_ = 0.0
+  sca_ = 0.0
   asy_ = 0.0
 
   call MAML_OpticsInterpolate(MAM7_MieTable(7), band, qa, density, dgn_wet, dp, ext_, sca_, asy_, nc, i1, i2, j1, j2, 1, km, rc)
@@ -4509,7 +4509,7 @@ end function isDataDrivenGC_
   asy = asy + sca_*asy_
   deallocate(qa, density, __STAT__)
 
- 
+
   ! inputs for radiation:  ext, sca and sca*asy
   ! in the callback     : 'asy' = product of asy and sca
   !                       'ssa' = sca
@@ -4517,25 +4517,25 @@ end function isDataDrivenGC_
 
 
   call ESMF_AttributeGet(state, name='extinction_in_air_due_to_ambient_aerosol', value=field_name, __RC__)
-  if (field_name /= '') then 
+  if (field_name /= '') then
       call MAPL_GetPointer(state, var, trim(field_name), __RC__)
       var = ext(:,:,:)
   end if
 
   call ESMF_AttributeGet(state, name='single_scattering_albedo_of_ambient_aerosol', value=field_name, __RC__)
-  if (field_name /= '') then 
+  if (field_name /= '') then
       call MAPL_GetPointer(state, var, trim(field_name), __RC__)
       var = ssa(:,:,:)
   end if
 
   call ESMF_AttributeGet(state, name='asymmetry_parameter_of_ambient_aerosol', value=field_name, __RC__)
-  if (field_name /= '') then 
+  if (field_name /= '') then
       call MAPL_GetPointer(state, var, trim(field_name), __RC__)
       var = asy(:,:,:)
   end if
 
 
-  deallocate(dp,                    __STAT__) 
+  deallocate(dp,                    __STAT__)
   deallocate(ext,  sca,  ssa,  asy, __STAT__)
   deallocate(ext_, sca_, asy_,      __STAT__)
 
@@ -4556,18 +4556,18 @@ subroutine aerosol_activation_properties(state, rc)
 
 ! Local
 ! ---------
-  character(len=ESMF_MAXSTR)      :: mode              ! mode 
+  character(len=ESMF_MAXSTR)      :: mode              ! mode
   type(ESMF_FieldBundle)          :: aerosols          ! field bundle containing the aerosol mass mixing ratios
 
   real, dimension(:,:,:), pointer :: q                 ! aerosol number or mass mixing ratio
 
-  real, dimension(:,:,:), pointer :: num               ! number concentration of aerosol particles 
+  real, dimension(:,:,:), pointer :: num               ! number concentration of aerosol particles
   real, dimension(:,:,:), pointer :: diameter          ! dry size of aerosol
   real, dimension(:,:,:), pointer :: sigma             ! width of aerosol mode
   real, dimension(:,:,:), pointer :: density           ! density of aerosol
-  real, dimension(:,:,:), pointer :: hygroscopicity    ! hygroscopicity of aerosol 
+  real, dimension(:,:,:), pointer :: hygroscopicity    ! hygroscopicity of aerosol
   real, dimension(:,:,:), pointer :: f_dust            ! fraction of dust aerosol
-  real, dimension(:,:,:), pointer :: f_soot            ! fraction of soot aerosol 
+  real, dimension(:,:,:), pointer :: f_soot            ! fraction of soot aerosol
   real, dimension(:,:,:), pointer :: f_organic         ! fraction of organic aerosol
 
   real, allocatable, dimension(:,:,:,:) :: qa          ! temporary buffers
@@ -4576,7 +4576,7 @@ subroutine aerosol_activation_properties(state, rc)
   real, allocatable, dimension(:) :: qa_f_dust
   real, allocatable, dimension(:) :: qa_f_soot
   real, allocatable, dimension(:) :: qa_f_organic
-  
+
 
   character(len=ESMF_MAXSTR)      :: fld_name
 
@@ -4610,8 +4610,8 @@ subroutine aerosol_activation_properties(state, rc)
   call MAPL_GetPointer(state, diameter, trim(fld_name), __RC__)
 
   call ESMF_AttributeGet(state, name='width_of_aerosol_mode', value=fld_name, __RC__)
-  call MAPL_GetPointer(state, sigma, trim(fld_name), __RC__) 
-  
+  call MAPL_GetPointer(state, sigma, trim(fld_name), __RC__)
+
   call ESMF_AttributeGet(state, name='aerosol_density', value=fld_name, __RC__)
   call MAPL_GetPointer(state, density, trim(fld_name), __RC__)
 
@@ -4627,7 +4627,7 @@ subroutine aerosol_activation_properties(state, rc)
   call ESMF_AttributeGet(state, name='fraction_of_organic_aerosol', value=fld_name, __RC__)
   call MAPL_GetPointer(state, f_organic, trim(fld_name), __RC__)
 
-  
+
 
 
 ! Obtain aerosol activation properties of this aerosol mode
@@ -4650,11 +4650,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4690,7 +4690,7 @@ subroutine aerosol_activation_properties(state, rc)
       deallocate(qa, __STAT__)
       deallocate(qa_density, qa_hygroscopicity, __STAT__)
       deallocate(qa_f_dust, qa_f_soot, qa_f_organic, __STAT__)
-      
+
   case (MAM7_ACCUMULATION_MODE_NAME)
       sigma_ = MAM7_ACCUMULATION_MODE_SIGMA
 
@@ -4699,11 +4699,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4760,11 +4760,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4801,11 +4801,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4844,11 +4844,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4888,11 +4888,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4931,11 +4931,11 @@ subroutine aerosol_activation_properties(state, rc)
       allocate(qa(ns,i1:i2,j1:j2,km), __STAT__)
       allocate(qa_density(ns), qa_hygroscopicity(ns), __STAT__)
       allocate(qa_f_dust(ns), qa_f_soot(ns), qa_f_organic(ns), __STAT__)
- 
+
       qa = 0.0
       qa_density = 0.0
       qa_hygroscopicity = 0.0
-      qa_f_dust    = 0.0 
+      qa_f_dust    = 0.0
       qa_f_soot    = 0.0
       qa_f_organic = 0.0
 
@@ -4965,12 +4965,12 @@ subroutine aerosol_activation_properties(state, rc)
       deallocate(qa, __STAT__)
       deallocate(qa_density, qa_hygroscopicity, __STAT__)
       deallocate(qa_f_dust, qa_f_soot, qa_f_organic, __STAT__)
-  
+
   case default
       __raise__(MAM_UNKNOWN_AEROSOL_MODE_ERROR,"Unknown aerosol mode used in the MAM aerosol activation properties method: "//trim(mode))
 
   end select
-  
+
 
   RETURN_(ESMF_SUCCESS)
 
@@ -4980,11 +4980,11 @@ contains
                     f_dust, f_soot, f_organic, &
                     q_num, sigma, &
                     q, q_density, q_hygroscopicity, &
-                    q_f_dust, q_f_soot, q_f_organic, & 
+                    q_f_dust, q_f_soot, q_f_organic, &
                     ns, &
                     i1, i2, j1, j2, km, &
                     rc)
-     
+
      implicit none
 
      integer, intent(in) :: i1, i2                                    ! dimension bounds
@@ -4997,17 +4997,17 @@ contains
      real, intent(in )                              :: sigma          ! width of the mode
 
      real, intent(in ), dimension(ns,i1:i2,j1:j2,km):: q              ! aerosol mass mixing ratio, kg kg-1
-     real, intent(in ), dimension(ns)               :: q_density      ! density of species 
+     real, intent(in ), dimension(ns)               :: q_density      ! density of species
      real, intent(in ), dimension(ns)               :: q_hygroscopicity
-     real, intent(in ), dimension(ns)               :: q_f_dust       ! 
+     real, intent(in ), dimension(ns)               :: q_f_dust       !
      real, intent(in ), dimension(ns)               :: q_f_soot       !
-     real, intent(in ), dimension(ns)               :: q_f_organic    ! 
+     real, intent(in ), dimension(ns)               :: q_f_organic    !
 
      real, intent(out), dimension(i1:i2,j1:j2,km)   :: diameter       ! dry size of aerosol
      real, intent(out), dimension(i1:i2,j1:j2,km)   :: density        ! density of aerosol
-     real, intent(out), dimension(i1:i2,j1:j2,km)   :: hygroscopicity ! hygroscopicity of aerosol 
+     real, intent(out), dimension(i1:i2,j1:j2,km)   :: hygroscopicity ! hygroscopicity of aerosol
      real, intent(out), dimension(i1:i2,j1:j2,km)   :: f_dust         ! fraction of dust aerosol
-     real, intent(out), dimension(i1:i2,j1:j2,km)   :: f_soot         ! fraction of soot aerosol 
+     real, intent(out), dimension(i1:i2,j1:j2,km)   :: f_soot         ! fraction of soot aerosol
      real, intent(out), dimension(i1:i2,j1:j2,km)   :: f_organic      ! fraction of organic aerosol
 
      integer, intent(out) :: rc                                       ! return code
@@ -5020,13 +5020,13 @@ contains
      real :: f
 
      integer :: i, j, k
-     
+
      integer :: STATUS
      character(len=ESMF_MAXSTR) :: Iam = 'MAM::aerosol_activation_properties::aap_()'
 
      ! vol = number * (MAPL_PI/6) * Dgn**3 * exp(4.5 * log(sigma)**2)
      f = 1.0 / ((MAPL_PI/6) * exp(4.5 * log(sigma)*log(sigma)))
-      
+
      do k = 1, km
          do j = j1, j2
              do i = i1, i2
@@ -5067,15 +5067,15 @@ contains
      RETURN_(ESMF_SUCCESS)
 
     end subroutine aap_
-    
+
  end subroutine aerosol_activation_properties
 
 
 
  function constituent_index_(constituent_name, rc) result (i)
-  
+
   use constituents,      only: pcnst, cnst_name
-  
+
   character(len=*),  intent(in)  :: constituent_name
   integer, optional, intent(out) :: rc
 
@@ -5104,4 +5104,4 @@ contains
  end function constituent_index_
 
 
- end module MAMchem_GridCompMod
+ end module MAM_GridCompMod

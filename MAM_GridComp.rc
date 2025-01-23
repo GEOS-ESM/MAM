@@ -1,6 +1,6 @@
-# -----------------------------------------------
-# Resource file for the MAMchem Gridded Component
-# -----------------------------------------------
+# -------------------------------------------
+# Resource file for the MAM Gridded Component
+# -------------------------------------------
 
 verbose: .FALSE.
 
@@ -35,11 +35,11 @@ aviation_vertical_layers: 0.0 100.0 9.0e3 10.0e3
 
 # Convective scavenging parameters
 # --------------------------------
-f_conv_scav_ait: 0.5    # aitken mode 
+f_conv_scav_ait: 0.5    # aitken mode
 f_conv_scav_acc: 0.4    # accumulation mode
 f_conv_scav_pcm: 0.1    # primary carbon mode
 f_conv_scav_fss: 0.4    # fine seasalt mode
-f_conv_scav_css: 0.5    # coarse seasalt mode 
+f_conv_scav_css: 0.5    # coarse seasalt mode
 f_conv_scav_fdu: 0.3    # fine dust mode
 f_conv_scav_cdu: 0.2    # coarse dust mode
 
@@ -50,7 +50,7 @@ f_wet_ait: 1.0          # aitken mode
 f_wet_acc: 1.0          # accumulation mode
 f_wet_pcm: 1.0          # primary carbon mode
 f_wet_fss: 1.0          # fine seasalt mode
-f_wet_css: 1.0          # coarse seasalt mode 
+f_wet_css: 1.0          # coarse seasalt mode
 f_wet_fdu: 0.5          # fine dust mode
 f_wet_cdu: 0.5          # coarse dust mode
 
