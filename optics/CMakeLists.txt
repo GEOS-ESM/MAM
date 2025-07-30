@@ -1,4 +1,4 @@
-set(miev_srcs 
+set(miev_srcs
    miev/ErrPack.f
    miev/MIEV0.F
    )
@@ -14,11 +14,11 @@ endforeach()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if (USE_F2PY)
-   find_package(F2PY2)
-   if (F2PY2_FOUND)
-      esma_add_f2py2_module(optics_
+   find_package(F2PY3)
+   if (F2PY3_FOUND)
+      esma_add_f2py3_module(optics_
          SOURCES mie.F90
-         DESTINATION lib/Python2/optics
+         DESTINATION lib/Python/optics
          ONLY scattering_lognormal
          LIBRARIES miev
          INCLUDEDIRS ${CMAKE_CURRENT_BINARY_DIR}
@@ -30,5 +30,5 @@ endif ()
 
 install(
    FILES radiation.py gads.py mam7-optics.lut.py
-   DESTINATION lib/Python2/optics
+   DESTINATION lib/Python/optics
    )
