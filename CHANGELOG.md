@@ -11,13 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Moved from `f2py2` to `f2py3` to enable removal of Python 2 support
-
 ### Fixed
 
 ### Removed
 
 ### Deprecated
+
+## [1.1.0] - 2025-09-09
+
+### Changed
+
+- Moved from `f2py2` to `f2py3` to enable removal of Python 2 support
 
 ## [1.0.0] - 2025-01-23
 
