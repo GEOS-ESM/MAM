@@ -4,7 +4,7 @@ module module_mosaic_cam_init
   use shr_kind_mod,            only: r8 => shr_kind_r8
   use infnan,                  only: nan, bigint
 #else
-  use MAPL_ConstantsMod,       only: r8 => MAPL_R8
+  use MAPL_Constants,          only: r8 => MAPL_R8
   use infnan,                  only: nan, bigint
 #endif
 
@@ -49,7 +49,7 @@ contains
 #ifndef GEOS5_PORT
     use physconst,                    only: pi_cam => pi
 #else
-    use MAPL_ConstantsMod,            only: pi_cam => MAPL_PI
+    use MAPL_Constants,            only: pi_cam => MAPL_PI
 #endif
     use module_mosaic_init_aerpar,    only: mosaic_init_aer_params
 
@@ -63,7 +63,7 @@ contains
     logical :: masterproc
     masterproc = verbose
 #endif
-    
+
 
     !Initialize Mosaic constants with values from CAM constants
     nbin_a_max = max_mode !*BALLI* Ask Dick about it

@@ -16,7 +16,7 @@
 !
 
    use MAPL
-   use MAPL_ConstantsMod, only : MAPL_PI, r8 => MAPL_R8
+   use MAPL_Constants, only : MAPL_PI, r8 => MAPL_R8
 
    use MAM_ComponentsDataMod
    use modal_aero_newnuc, only : mer07_veh02_nuc_mosaic_1box
@@ -31,13 +31,13 @@
    public MAML_Nucleation
 
 
-! !PRIVATE PARAMETERS 
+! !PRIVATE PARAMETERS
    real, private, parameter :: pi = MAPL_PI
 
 
 
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
 !  {\tt MAML\_NucleationMod} provides a collection of methods to calculate
 !  binary and ternary nucleation rates.
@@ -47,7 +47,7 @@
 !
 !  26Jan2012  A. Darmenov  Initial version -- based on CESM-1.0.3 CAM/MAM
 !                                             modal_aero_newnuc module
-!                                            
+!
 !
 !EOP
 !-------------------------------------------------------------------------
@@ -66,7 +66,7 @@
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: MAML_NucleationHomogeneous --- 
+! !IROUTINE: MAML_NucleationHomogeneous ---
 !
 ! !INTERFACE:
 
@@ -103,7 +103,7 @@
    real, intent(inout) :: q_nh4                ! mass mixing ratio of ammonium (NH4) in the Aitken mode
    real, intent(inout) :: q_so4                ! mass mixing ratio of sulfate  (SO4) in the Aitken mode
 
-   real, intent(inout) :: q_h2so4              ! mass mixing ratio of sulfuric acid (H2SO4) 
+   real, intent(inout) :: q_h2so4              ! mass mixing ratio of sulfuric acid (H2SO4)
    real, intent(inout) :: q_nh3                ! mass mixing ratio of ammonia (NH3)
 
 
@@ -131,7 +131,7 @@
    real, intent(in)    :: dt                   ! time step
 
    logical, intent(in) :: do_nh3               ! NH3 flag
-   
+
 
 ! !OUTPUT PARAMETERS:
 
@@ -186,14 +186,14 @@
 
    real(r8) :: dndt_ait, dmdt_ait                        ! number and mass nucleation rates
 
-   real(r8) :: dso4dt_ait                                ! 
-   real(r8) :: dnh4dt_ait                                ! 
+   real(r8) :: dso4dt_ait                                !
+   real(r8) :: dnh4dt_ait                                !
    real(r8) :: dqdt_numait, dqdt_nh4ait, dqdt_so4ait     !
    real(r8) :: dqdt_h2so4, dqdt_nh3                      !
 
    real(r8) :: tmp_a, tmp_b, tmp_c, tmp_q2, tmp_q3,   &  ! temporary vars
                tmp_uptake_rate, tmp_frso4
-               
+
    real(r8) :: dndt_aitsv1, dndt_aitsv2, dndt_aitsv3, &  ! temporary values of the nucleation rates
                dmdt_aitsv1, dmdt_aitsv2, dmdt_aitsv3
 
@@ -245,12 +245,12 @@
    ! skip if H2SO4 vapor mixing ratio is less than q_h2so4_cutoff
    if (q_h2so4_cur <= q_h2so4_cutoff) &
        return
-    
+
 
    tmp_a = max(0.0, dq_h2so4_gasprod)
    tmp_q3 = q_h2so4_cur
 
-   ! tmp_q2 = qh2so4 before aerosol uptake, note that both 
+   ! tmp_q2 = qh2so4 before aerosol uptake, note that both
    ! tmp_q3 and tmp_q2 are greater or equal to 0
    tmp_q2 = tmp_q3 + max(0.0, -dq_h2so4_aeruptk)
 
@@ -320,12 +320,12 @@
                                     deltat,             &      ! time step, s
                                     T,                  &      ! temperature, K
                                     rh_non_cld,         &      ! relative humidity, as fraction
-                                    P,                  &      ! air pressure, Pa 
-                                    zm,                 &      ! 
+                                    P,                  &      ! air pressure, Pa
+                                    zm,                 &      !
                                     pblh,               &      !
                                     q_h2so4_cur,        &      ! gas h2so4 mixing ratios (mol/mol-air) -- current value (after gas chem and condensation)
                                     q_h2so4_avg,        &      ! -- // --                              -- estimated average value (for simultaneous source/sink calcs)
-                                    q_nh3_cur,          &      ! gas nh3 mixing ratios (mol/mol-air)   -- current value 
+                                    q_nh3_cur,          &      ! gas nh3 mixing ratios (mol/mol-air)   -- current value
                                     tmp_uptake_rate,    &
                                     mw_so4a_host,       &
                                     1,                  &      ! ?? nsize  // number of aerosol size bins
@@ -333,7 +333,7 @@
                                     dplom_mode,         &      ! dry diameter at lower bnd of bin (m)
                                     dphim_mode,         &      ! dry diameter at upper bnd of bin (m)
                                     itmp,               &      ! size bin into which new particles go
-                                    dq_numa,            &      ! change to aerosol number mixing ratio (#/mol-air) 
+                                    dq_numa,            &      ! change to aerosol number mixing ratio (#/mol-air)
                                     dq_so4a,            &      ! change to aerosol so4 mixing ratio (mol/mol-air) -- aerosol changes are > 0
                                     dq_nh4a,            &      ! change to aerosol nh4 mixing ratio (mol/mol-air)
                                     dq_h2so4,           &      ! change to gas h2so4 mixing ratio (mol/mol-air)   -- gas changes are < 0
@@ -343,7 +343,7 @@
 
 
    ! convert dq_numa units from #/mol-air to #/kmol-air
-   dq_numa = dq_numa * 1.0e3_r8 
+   dq_numa = dq_numa * 1.0e3_r8
 
    ! number nucleation rate, #/kmol-air/s
    dndt_ait = dq_numa/deltat
@@ -372,7 +372,7 @@
        dmdt_aitsv2 = dmdt_ait
 
 
-       ! mirage2 code checked for complete H2SO4 depletion here, 
+       ! mirage2 code checked for complete H2SO4 depletion here,
        ! but this is now done in mer07_veh02_nuc_mosaic_1box
        mass_1p = dmdt_ait/dndt_ait
        dndt_aitsv3 = dndt_ait
@@ -414,7 +414,7 @@
 
 
    return
- 
+
    end subroutine MAML_NucleationHomogeneous
 
 

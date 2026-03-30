@@ -11,7 +11,7 @@
 #ifndef GEOS5_PORT
       use shr_kind_mod, only : r8 => shr_kind_r8
 #else
-      use MAPL_ConstantsMod, only: r8 => MAPL_R8
+      use MAPL_Constants, only: r8 => MAPL_R8
 #endif
 
       implicit none

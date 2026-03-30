@@ -16,7 +16,7 @@
 !
 
    use MAPL
-   use MAPL_ConstantsMod, only : MAPL_PI, MAPL_RHOWTR, r8 => MAPL_R8
+   use MAPL_Constants, only : MAPL_PI, MAPL_RHOWTR, r8 => MAPL_R8
 
    use modal_aero_wateruptake, only : modal_aero_kohler
 
@@ -31,13 +31,13 @@
    public MAML_WetSize
 
 
-! !PRIVATE PARAMETERS 
+! !PRIVATE PARAMETERS
    real, private, parameter :: pi = MAPL_PI
    real, private, parameter :: density_water = MAPL_RHOWTR    ! density of water,  'kg m-3'
 
 
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
 !  {\tt MAML\_SizeMod} provides a collection of methods to calculate
 !  dry and wet size of aerosol particles.
@@ -60,13 +60,13 @@
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: MAML_DrySize --- 
+! !IROUTINE: MAML_DrySize ---
 !
 ! !INTERFACE:
 
    function MAML_DrySize(q_number,        &
                          q_mass,          &
-                         density,         & 
+                         density,         &
                          sigma,           &
                          Dg_default,      &
                          Dg_min,          &
@@ -109,7 +109,7 @@
 !EOP
 !-------------------------------------------------------------------------
                    __Iam__('MAML_DrySize')
-       
+
    ! local variables
    real :: vol         ! volume
    real :: num         ! number mixing ratio
@@ -146,14 +146,14 @@
    Dg_num = Dg
 
    end function MAML_DrySize
-   
+
 
 !-------------------------------------------------------------------------
 !     NASA/GSFC, Global Modeling and Assimilation Office, Code 610.1     !
 !-------------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: MAML_WetSize --- 
+! !IROUTINE: MAML_WetSize ---
 !
 ! !INTERFACE:
 
@@ -229,7 +229,7 @@
    real     :: particle_vol_dry                    !  - dry volume
    real     :: particle_mass_dry                   !  - dry mass
    real     :: particle_radius_dry                 !  - dry radius
-   real     :: particle_vol_wet                    !  - wet volume 
+   real     :: particle_vol_wet                    !  - wet volume
    real     :: particle_radius_wet                 !  - wet radius
    real     :: particle_vol_water                  !  - volume of aerosol water
 
@@ -248,7 +248,7 @@
    real, parameter :: MMR_DRY_MIN = 1e-31         ! minimum mass mixing ratio
 
    real, parameter :: pi_43 = (4/3.0) * pi
-   
+
    real, parameter :: third = (1/3.0)
 
 
@@ -289,13 +289,13 @@
        density_dry = sum(density) / size(density)
    end if
 
-   
+
    ! dry volume to number factor
    f = (pi / 6) * exp(4.5 * (log(sigma))**2)
    vol2num = 1 / (f * Dg_dry**3)
 
    number_dry = vol2num * vol_dry     ! why not pass the number mixing ratio as an input argument?
-                                      ! besides, there might be inconsistencies introduced by 
+                                      ! besides, there might be inconsistencies introduced by
                                       ! using max()/min() range tests
 
 
@@ -304,7 +304,7 @@
    particle_vol_dry    = particle_number_dry / vol2num
    particle_mass_dry   = density_dry * particle_vol_dry
    particle_radius_dry = (particle_vol_dry / pi_43)**third
-   
+
    ! compute the wet radius
    rh_(1) = rh_clr
    particle_radius_dry_(1)     = particle_radius_dry
@@ -330,8 +330,8 @@
    particle_vol_water = max(0.0, particle_vol_water)
 
 
-   ! Simple treatment of deliquesence/crystallization hysteresis -- 
-   ! for rhcrystal < rh < rhdeliques, aerosol water is a fraction of the 
+   ! Simple treatment of deliquesence/crystallization hysteresis --
+   ! for rhcrystal < rh < rhdeliques, aerosol water is a fraction of the
    ! "upper curve" value, and the fraction is a linear function of RH
 
    if (rh_clr < rh_crystallization) then
@@ -348,7 +348,7 @@
        particle_radius_wet = (particle_vol_wet / pi_43)**third
    end if
 
- 
+
    ! water absorbed by the aerosols
    q_aerosol_water = density_water * number_dry * particle_vol_water
 
@@ -359,7 +359,7 @@
    else
        density_wet = density_dry
    end if
-   
+
    end subroutine MAML_WetSize
 
 

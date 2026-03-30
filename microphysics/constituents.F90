@@ -2,7 +2,7 @@
 module constituents
 
 !----------------------------------------------------------------------------------------------
-! 
+!
 ! Purpose: Contains data and functions for manipulating advected and non-advected constituents.
 !
 ! Revision history:
@@ -21,10 +21,10 @@ module constituents
   use abortutils,   only: endrun
   use cam_logfile,  only: iulog
 #else
-  use MAPL_ConstantsMod, only: pi => MAPL_PI, r8 => MAPL_R8
-  use MAPL_ConstantsMod, only: r_universal => MAPL_RUNIV
-  use abortutils,        only: endrun
-  use cam_logfile,       only: iulog
+  use MAPL_Constants, only: pi => MAPL_PI, r8 => MAPL_R8
+  use MAPL_Constants, only: r_universal => MAPL_RUNIV
+  use abortutils,     only: endrun
+  use cam_logfile,    only: iulog
 #endif
 
   implicit none
@@ -101,8 +101,8 @@ CONTAINS
   subroutine cnst_add (name, mwc, cpc, qminc, &
                        ind, longname, readiv, mixtype, molectype, cam_outfld, &
                        fixed_ubc, fixed_ubflx, is_convtran1)
-!----------------------------------------------------------------------- 
-! 
+!-----------------------------------------------------------------------
+!
 ! Purpose: Register a constituent to be advected by the large scale winds and transported by
 !          subgrid scale processes.
 !
@@ -172,7 +172,7 @@ CONTAINS
        cnst_molec(ind) = 'minor'
     end if
 
-! set outfld type 
+! set outfld type
 ! (false: the module declaring the constituent is responsible for outfld calls)
     if ( present(cam_outfld) ) then
        cam_outfld_(ind) = cam_outfld
@@ -228,12 +228,12 @@ CONTAINS
 !==============================================================================
 
   subroutine cnst_get_ind (name, ind, abort)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: Get the index of a constituent 
-! 
+!-----------------------------------------------------------------------
+!
+! Purpose: Get the index of a constituent
+!
 ! Author:  B.A. Boville
-! 
+!
 !-----------------------------Arguments---------------------------------
 !
     character(len=*),  intent(in)  :: name  ! constituent name
@@ -270,16 +270,16 @@ CONTAINS
 !==============================================================================================
 
   character*3 function cnst_get_type_byind (ind)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: Get the type of a constituent 
-! 
-! Method: 
-! <Describe the algorithm(s) used in the routine.> 
-! <Also include any applicable external references.> 
-! 
+!-----------------------------------------------------------------------
+!
+! Purpose: Get the type of a constituent
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
 ! Author:  P. J. Rasch
-! 
+!
 !-----------------------------Arguments---------------------------------
 !
     integer, intent(in)   :: ind    ! global constituent index (in q array)
@@ -303,16 +303,16 @@ CONTAINS
 !==============================================================================================
 
   character*3 function cnst_get_type_byname (name)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: Get the type of a constituent 
-! 
-! Method: 
-! <Describe the algorithm(s) used in the routine.> 
-! <Also include any applicable external references.> 
-! 
+!-----------------------------------------------------------------------
+!
+! Purpose: Get the type of a constituent
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
 ! Author:  P. J. Rasch
-! 
+!
 !-----------------------------Arguments---------------------------------
 !
     character(len=*), intent(in) :: name ! constituent name
@@ -336,16 +336,16 @@ CONTAINS
   end function cnst_get_type_byname
 
   character*5 function cnst_get_molec_byind (ind)
-!----------------------------------------------------------------------- 
-! 
-! Purpose: Get the molecular diffusion type of a constituent 
-! 
-! Method: 
-! <Describe the algorithm(s) used in the routine.> 
-! <Also include any applicable external references.> 
-! 
+!-----------------------------------------------------------------------
+!
+! Purpose: Get the molecular diffusion type of a constituent
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
 ! Author: J. McInerney
-! 
+!
 !-----------------------------Arguments---------------------------------
 !
     integer, intent(in)   :: ind    ! global constituent index (in q array)
@@ -367,12 +367,12 @@ CONTAINS
 
 !==============================================================================
   function cnst_read_iv(m)
-!----------------------------------------------------------------------- 
-! 
+!-----------------------------------------------------------------------
+!
 ! Purpose: Query whether constituent initial values are read from initial file.
-! 
+!
 ! Author:  B. Eaton
-! 
+!
 !-----------------------------Arguments---------------------------------
 !
     integer, intent(in) :: m    ! constituent index
@@ -385,17 +385,17 @@ CONTAINS
 
 !==============================================================================
   subroutine cnst_chk_dim
-!----------------------------------------------------------------------- 
-! 
+!-----------------------------------------------------------------------
+!
 ! Purpose: Check that the number of registered constituents of each type is the
 !          same as the dimension
-! 
-! Method: 
-! <Describe the algorithm(s) used in the routine.> 
-! <Also include any applicable external references.> 
-! 
+!
+! Method:
+! <Describe the algorithm(s) used in the routine.>
+! <Also include any applicable external references.>
+!
 ! Author:  B.A. Boville
-! 
+!
     integer i,m
 !-----------------------------------------------------------------------
 !
@@ -431,12 +431,12 @@ CONTAINS
 !==============================================================================
 
 function cnst_cam_outfld(m)
-!----------------------------------------------------------------------- 
-! 
+!-----------------------------------------------------------------------
+!
 ! Purpose:
 ! Query whether default CAM outfld calls should be made.
-! 
-!----------------------------------------------------------------------- 
+!
+!-----------------------------------------------------------------------
    integer, intent(in) :: m                ! constituent index
    logical             :: cnst_cam_outfld  ! true => use default CAM outfld calls
 !-----------------------------------------------------------------------

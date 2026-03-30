@@ -17,7 +17,7 @@ use ref_pres,         only: top_lev => clim_modal_aero_top_lev
 use phys_control,     only: phys_getopts
 use abortutils,       only: endrun
 #else
-use MAPL_ConstantsMod,only: r8 => MAPL_R8, pi => MAPL_PI
+use MAPL_Constants,only: r8 => MAPL_R8, pi => MAPL_PI
 use cam_logfile,      only: iulog
 #endif
 
@@ -60,11 +60,11 @@ subroutine modal_aero_wateruptake_init()
    character(len=3) :: trnum       ! used to hold mode number (as characters)
    !----------------------------------------------------------------------------
 
-   cld_idx        = pbuf_get_index('CLD')    
-   dgnum_idx      = pbuf_get_index('DGNUM')    
-   dgnumwet_idx   = pbuf_get_index('DGNUMWET')    
-   wetdens_ap_idx = pbuf_get_index('WETDENS_AP')    
-   qaerwat_idx    = pbuf_get_index('QAERWAT')    
+   cld_idx        = pbuf_get_index('CLD')
+   dgnum_idx      = pbuf_get_index('DGNUM')
+   dgnumwet_idx   = pbuf_get_index('DGNUMWET')
+   wetdens_ap_idx = pbuf_get_index('WETDENS_AP')
+   qaerwat_idx    = pbuf_get_index('QAERWAT')
 
    ! assume for now that will compute wateruptake for climate list modes only
 
@@ -78,11 +78,11 @@ subroutine modal_aero_wateruptake_init()
          'wet dgnum, interstitial, mode '//trnum(2:3), phys_decomp)
       call addfld('wat_a'//trnum(3:3), 'm', pver, 'A', &
          'aerosol water, interstitial, mode '//trnum(2:3), phys_decomp)
-      
+
       ! determine default variables
       call phys_getopts(history_aerosol_out = history_aerosol)
 
-      if (history_aerosol) then  
+      if (history_aerosol) then
          call add_default('dgnd_a'//trnum(2:3), 1, ' ')
          call add_default('dgnw_a'//trnum(2:3), 1, ' ')
          call add_default('wat_a'//trnum(3:3),  1, ' ')
@@ -537,13 +537,13 @@ end subroutine modal_aero_wateruptake_sub
            do n=1,4
               xr=real(cx4(n,i))
               xi=aimag(cx4(n,i))
-              if(abs(xi).gt.abs(xr)*eps) cycle  
-              if(xr.gt.r(i)) cycle  
-              if(xr.lt.rdry(i)*(1._r8-eps)) cycle  
-              if(xr.ne.xr) cycle  
+              if(abs(xi).gt.abs(xr)*eps) cycle
+              if(xr.gt.r(i)) cycle
+              if(xr.lt.rdry(i)*(1._r8-eps)) cycle
+              if(xr.ne.xr) cycle
               r(i)=xr
               nsol=n
-           end do  
+           end do
            if(nsol.eq.0)then
 #ifndef GEOS5_PORT
               write(iulog,*)   &
@@ -582,13 +582,13 @@ end subroutine modal_aero_wateruptake_sub
               do n=1,3
                  xr=real(cx3(n,i))
                  xi=aimag(cx3(n,i))
-                 if(abs(xi).gt.abs(xr)*eps) cycle  
-                 if(xr.gt.r(i)) cycle  
-                 if(xr.lt.rdry(i)*(1._r8-eps)) cycle  
-                 if(xr.ne.xr) cycle  
+                 if(abs(xi).gt.abs(xr)*eps) cycle
+                 if(xr.gt.r(i)) cycle
+                 if(xr.lt.rdry(i)*(1._r8-eps)) cycle
+                 if(xr.ne.xr) cycle
                  r(i)=xr
                  nsol=n
-              end do  
+              end do
               if(nsol.eq.0)then
 #ifndef GEOS5_PORT
                  write(iulog,*)   &

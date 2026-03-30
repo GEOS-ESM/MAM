@@ -17,14 +17,14 @@ module infnan
 #ifndef GEOS5_PORT
   use shr_kind_mod, only: r8 => shr_kind_r8
 #else
-  use MAPL_ConstantsMod, only: r8 => MAPL_R8
+  use MAPL_Constants, only: r8 => MAPL_R8
 #endif
 
 #ifdef __PGI
 ! quiet nan for portland group compilers
   real(r8), parameter :: inf = O'0777600000000000000000'
   real(r8), parameter :: nan = O'0777700000000000000000'
-  integer,  parameter :: bigint = O'17777777777'    
+  integer,  parameter :: bigint = O'17777777777'
 #else
 ! signaling nan otherwise
   real(r8), parameter :: inf = O'0777600000000000000000'

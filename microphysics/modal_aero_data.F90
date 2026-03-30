@@ -8,8 +8,8 @@
       use constituents,  only: pcnst
       use radconstants,  only: nswbands, nlwbands
 #else
-      use MAPL_ConstantsMod, only: r8 => MAPL_R8
-      use constituents,      only: pcnst
+      use MAPL_Constants, only: r8 => MAPL_R8
+      use constituents,   only: pcnst
 #endif
 
       implicit none
@@ -63,7 +63,7 @@
          'fine_dust       ', &
          'coarse_seasalt  ', &
          'coarse_dust     '/)
-#elif ( defined MODAL_AERO_4MODE )   
+#elif ( defined MODAL_AERO_4MODE )
     character(len=*), parameter :: modename_amode(ntot_amode) = (/ &
          'accum           ', &
          'aitken          ', &
@@ -84,7 +84,7 @@
 #endif
 
 
-#elif ( defined MODAL_AERO_4MODE )  
+#elif ( defined MODAL_AERO_4MODE )
 
 #ifndef MOSAIC_SPECIES
     integer, parameter :: nspec_amode(ntot_amode)           = (/ 6, 3, 3, 2 /)
@@ -103,7 +103,7 @@
     integer, parameter ::     mdiagnum_amode(ntot_amode)   = (/ 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter ::     mprogsfc_amode(ntot_amode)   = (/ 0, 0, 0, 0, 0, 0, 0/)
     integer, parameter ::     mcalcwater_amode(ntot_amode) = (/ 1, 1, 1, 1, 1, 1, 1/)
-#elif ( defined MODAL_AERO_4MODE )  
+#elif ( defined MODAL_AERO_4MODE )
     integer, parameter ::     mprognum_amode(ntot_amode)   = (/ 1, 1, 1, 1/)
     integer, parameter ::     mdiagnum_amode(ntot_amode)   = (/ 0, 0, 0, 0/)
     integer, parameter ::     mprogsfc_amode(ntot_amode)   = (/ 0, 0, 0, 0/)
@@ -233,8 +233,8 @@
 
 
 
-!   The following variables determine whether convective cloud transport and 
-!   wet removal are done in the standard routines or in modal_aero_convproc 
+!   The following variables determine whether convective cloud transport and
+!   wet removal are done in the standard routines or in modal_aero_convproc
 !   routines (eventually should be variables set by namelist)
 
       !BSINGH:02/25/2013: Following variables are NOT read from Namelist as
@@ -246,13 +246,13 @@
       integer :: convproc_do_aer  = 0
       logical :: HD_mods          = .false. !default, it is read from namelist now!!!
 
-!   This variable controls history output of additonal deep-convection wet deposition fields 
+!   This variable controls history output of additonal deep-convection wet deposition fields
 !   (in addition to the normal fields for total-convection wet deposition)
       logical, parameter :: deepconv_wetdep_history = .true.
 
       integer, parameter :: mam_amicphys_optaa = 100
-! mam_amicphys_optaa <  100 -- use old microphysics code (separate calls to gasaerexch, 
-!                                                         newnuc, coag routines) 
+! mam_amicphys_optaa <  100 -- use old microphysics code (separate calls to gasaerexch,
+!                                                         newnuc, coag routines)
 !                    >= 100 -- use new microphysics code (single call to amicphys routine)
 
 #ifndef GEOS5_PORT
@@ -261,7 +261,7 @@
         subroutine qqcw_set_ptr(index, iptr)
           use abortutils, only : endrun
           use time_manager, only : is_first_step
-          
+
 
           integer, intent(in) :: index, iptr
 
@@ -286,13 +286,13 @@
           nullify(qqcw_get_field)
           error = .false.
           if (index>0 .and. index <= pcnst) then
-             if (qqcw(index)>0) then 
+             if (qqcw(index)>0) then
                 call pbuf_get_field(pbuf, qqcw(index), qqcw_get_field)
              else
                 error = .true.
              endif
           else
-             error = .true.             
+             error = .true.
           end if
 
           if (error .and. .not. present(errorhandle)) then

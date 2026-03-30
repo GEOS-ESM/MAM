@@ -1321,7 +1321,7 @@ contains
 
 
     subroutine microphysics_initialize(imozart, verbose, rc)
-        use MAPL_ConstantsMod, only: r8 => MAPL_R8
+        use MAPL_Constants, only: r8 => MAPL_R8
 
         use constituents,      only: pcnst, cnst_name, cnst_longname
         use chem_mods,         only: gas_pcnst, adv_mass
@@ -1516,7 +1516,7 @@ contains
    subroutine Run_ ( GC, IMPORT, EXPORT, CLOCK, rc )
 
 ! !USES:
-    use MAPL_ConstantsMod,   only: r8 => MAPL_R8
+    use MAPL_Constants,      only: r8 => MAPL_R8
     use cam_logfile,         only: iulog
     use chem_mods,           only: gas_pcnst, adv_mass
 

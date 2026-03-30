@@ -17,7 +17,7 @@
    use chem_mods,       only:  gas_pcnst
    use modal_aero_data, only:  maxd_aspectype
 #else
-   use MAPL_ConstantsMod, only: r8 => MAPL_R8, r4 => MAPL_R4
+   use MAPL_Constants, only: r8 => MAPL_R8, r4 => MAPL_R4
    use chem_mods,         only: gas_pcnst
    use modal_aero_data,   only: maxd_aspectype
 #endif
@@ -43,10 +43,10 @@
   integer, parameter, public :: pair_option_acoag = 1
 #endif
 ! specifies pairs of modes for which coagulation is calculated
-!   1 -- [aitken-->accum] 
+!   1 -- [aitken-->accum]
 !   2 -- [aitken-->accum], and [pcarbon-->accum]
-!   3 -- [aitken-->accum], [pcarbon-->accum], 
-!        and [aitken-->pcarbon--(aging)-->accum] 
+!   3 -- [aitken-->accum], [pcarbon-->accum],
+!        and [aitken-->pcarbon--(aging)-->accum]
 ! other -- do no coag
 
   integer, parameter, public :: maxpair_acoag = 10
@@ -120,7 +120,7 @@
    integer, intent(in)  :: ncol             ! number of columns in chunk
    integer, intent(in)  :: nstep            ! model step
    integer, intent(in)  :: loffset          ! offset applied to modal aero "pointers"
-   integer, intent(in)  :: latndx(pcols), lonndx(pcols) 
+   integer, intent(in)  :: latndx(pcols), lonndx(pcols)
 
    real(r8), intent(in) :: deltat_main      ! model timestep (s)
 
@@ -128,7 +128,7 @@
    real(r8), intent(in) :: pmid(pcols,pver) ! pressure at model levels (Pa)
    real(r8), intent(in) :: pdel(pcols,pver) ! pressure thickness of levels (Pa)
 
-   real(r8), intent(inout) :: q(ncol,pver,pcnstxx) 
+   real(r8), intent(inout) :: q(ncol,pver,pcnstxx)
                                             ! tracer mixing ratio (TMR) array
                                             ! *** MUST BE mol/mol-air or #/mol-air
                                             ! *** NOTE ncol & pcnstxx dimensions
@@ -136,13 +136,13 @@
                                  ! dry geo. mean dia. (m) of number distrib.
    real(r8), intent(in) :: dgncur_awet(pcols,pver,ntot_amode)
                                  ! wet geo. mean dia. (m) of number distrib.
-   real(r8), intent(in) :: wetdens_a(pcols,pver,ntot_amode) 
+   real(r8), intent(in) :: wetdens_a(pcols,pver,ntot_amode)
                                  ! density of wet aerosol (kg/m3)
 
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !   computes changes due to coagulation involving
 !	aitken mode (modeptr_aitken) with accumulation mode (modeptr_accum)
-!   this version will 
+!   this version will
 !	compute changes to mass and number, but not to surface area
 !	calculates coagulation rate coefficients using either
 !	    new CMAQ V4.6 fast method
@@ -189,7 +189,7 @@
 	real(r8) :: vol_core, vol_shell
 	real(r8) :: wetdens_frm, wetdens_too, wetdgnum_frm, wetdgnum_too
 	real(r8) :: xbetaij0, xbetaij2i, xbetaij2j, xbetaij3, &
-                    xbetaii0, xbetaii2,  xbetajj0,  xbetajj2     
+                    xbetaii0, xbetaii2,  xbetajj0,  xbetajj2
       	real(r8) :: xferamt, xferfracvol, xferfrac_pcage, xferfrac_max
 	real(r8) :: xnumbconc(ntot_amode)
 	real(r8) :: xnumbconcavg(ntot_amode), xnumbconcnew(ntot_amode)
@@ -290,7 +290,7 @@
 !   (see modal_aero_gasaerexch)
 		end if
 	    end do
-	    
+
 	    do l = 1, nspec_amode(mpca)
 		l2 = lspectype_amode(l,mpca)
 !   fac_m2v converts (kmol-AP/kmol-air) to (m3-AP/kmol-air)
@@ -326,7 +326,7 @@ main_i: do i = 1, ncol
 	do n = 1, ntot_amode
 	    if (idomode(n) .gt. 0) then
 		xnumbconc(n) = q(i,k,numptr_amode(n)-loffset)*aircon
-		xnumbconc(n) = max( 0.0_r8, xnumbconc(n) ) 
+		xnumbconc(n) = max( 0.0_r8, xnumbconc(n) )
 	    end if
 	    iselfcoagdone(n) = 0
 	end do
@@ -799,9 +799,9 @@ main_ipair2: do ipair = 1, npair_acoag
 
 	logical :: dotend(pcnst)
         logical :: history_aerosol      ! Output the MAM aerosol tendencies
- 
-        !-----------------------------------------------------------------------     
-    
+
+        !-----------------------------------------------------------------------
+
         call phys_getopts( history_aerosol_out        = history_aerosol   )
 
 	lunout = iulog
@@ -943,7 +943,7 @@ aa_iqfrm: do iqfrm = 1, nspec_amode(mfrm)
 	end do ! ipair = ...
 	write(lunout,*)
 
-	end if ! ( masterproc ) 
+	end if ! ( masterproc )
 
 9310	format( / 'subr. modal_aero_coag_init' )
 9320	format( 'pair', i3, 5x, 'mode', i3, &
@@ -999,7 +999,7 @@ aa_iqfrm: do iqfrm = 1, nspec_amode(mfrm)
 	    fieldname = trim(tmpname) // '_sfcoag1'
 	    long_name = trim(tmpname) // ' modal_aero coagulation column tendency'
 	    call addfld( fieldname, unit, 1, 'A', long_name, phys_decomp )
-            if ( history_aerosol ) then 
+            if ( history_aerosol ) then
                call add_default( fieldname, 1, ' ' )
 	    endif
 	    if ( masterproc ) write(iulog,'(3(a,2x))') &
@@ -1731,7 +1731,7 @@ aa_iqfrm: do iqfrm = 1, nspec_amode(mfrm)
                 1.036610829789514_r8,   &
                 1.756683649299882_r8,   &
                 2.532731674232790_r8,   &
-                3.436159118837738_r8/    
+                3.436159118837738_r8/
 
       data ghwi/6.108626337353e-1_r8,   &
                 2.401386110823e-1_r8,   &
@@ -2020,7 +2020,7 @@ aa_iqfrm: do iqfrm = 1, nspec_amode(mfrm)
                        batat(2), batat(1), bacac(2), bacac(1),   &
                        batac(2), bacat(2), batac(1), c3ij )
 
-! convert from the "cmaq" coag rate parameters 
+! convert from the "cmaq" coag rate parameters
 ! to the "mirage2" parameters
         dumacc2 = ( (dgacc**2) * exp( 2.0_r8*xxlsgac*xxlsgac ) )
         dumatk2 = ( (dgatk**2) * exp( 2.0_r8*xxlsgat*xxlsgat ) )
@@ -2062,7 +2062,7 @@ aa_iqfrm: do iqfrm = 1, nspec_amode(mfrm)
 !
 !   fsb 08/25/04 added in-line documentation
 !
-!   rce 04/15/2007 
+!   rce 04/15/2007
 !       code taken from cmaq v4.6 code; converted to f90;
 !	added "intent" to subr arguments;
 !       renamed "r4" & "r8" variables to "rx4" & "rx8";
