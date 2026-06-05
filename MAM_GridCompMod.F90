@@ -218,7 +218,7 @@ contains
 !   Wrap internal state for storing in GC; rename legacyState
 !   -------------------------------------
     allocate ( self, stat=STATUS )
-    VERIFY_(STATUS)
+    _VERIFY(STATUS)
     wrap%ptr => self
 
 
@@ -324,7 +324,7 @@ contains
 !   Store internal state in GC
 !   --------------------------
     call ESMF_UserCompSetInternalState ( GC, 'MAM_state', wrap, STATUS )
-    VERIFY_(STATUS)
+    _VERIFY(STATUS)
 
 !                         ------------------
 !                         MAPL Data Services
@@ -643,7 +643,7 @@ contains
 !   All done
 !   --------
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
   end subroutine SetServices
 
@@ -813,7 +813,7 @@ contains
         call ESMF_ConfigGetAttribute(self%CF, f_hres(n), __RC__)
     end do
     self%femisSS = Chem_UtilResVal(self%im_world, self%jm_world, f_hres(:), STATUS)
-    VERIFY_(STATUS)
+    _VERIFY(STATUS)
 
 
     call ESMF_ConfigFindLabel(self%CF, 'dust_femis:', __RC__)
@@ -821,7 +821,7 @@ contains
         call ESMF_ConfigGetAttribute(self%CF, f_hres(n), __RC__)
     end do
     self%femisDU = Chem_UtilResVal(self%im_world, self%jm_world, f_hres(:), STATUS)
-    VERIFY_(STATUS)
+    _VERIFY(STATUS)
 
 
 !   Box model aerosol microphysics
@@ -1301,7 +1301,7 @@ contains
     call MAPL_TimerOff(mgState, 'INITIALIZE', __RC__)
     call MAPL_TimerOff(mgState, 'TOTAL',      __RC__)
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
     contains
 
@@ -1496,7 +1496,7 @@ contains
 #endif
 
 
-        RETURN_(ESMF_SUCCESS)
+        _RETURN(ESMF_SUCCESS)
 
     end subroutine microphysics_initialize
 
@@ -1865,7 +1865,7 @@ contains
     if (run_alarm_ringing) then
         call ESMF_AlarmRingerOff(run_alarm, __RC__)
     else
-        RETURN_(ESMF_SUCCESS)
+        _RETURN(ESMF_SUCCESS)
     endif
 
 
@@ -2847,7 +2847,7 @@ contains
 
 !   All done
 !   --------
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
    end subroutine Run_
 
@@ -2956,7 +2956,7 @@ contains
 
 !  All done
 !  --------
-   RETURN_(ESMF_SUCCESS)
+   _RETURN(ESMF_SUCCESS)
 
  end subroutine Finalize_
 
@@ -3016,7 +3016,7 @@ contains
 !   Get my internal state
 !   ---------------------
     call ESMF_UserCompGetInternalState(GC, 'MAM_state', wrap, STATUS)
-    VERIFY_(STATUS)
+    _VERIFY(STATUS)
     myState => wrap%ptr
 
 !   Get the configuration
@@ -3059,7 +3059,7 @@ contains
     lm = dims(3)
 
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
  end subroutine extract_
 
@@ -3144,7 +3144,7 @@ contains
     long_name  = buff // trim(attachment_state) // ' aerosol particles in ' // trim(mode_long_name) // ' mode'
 
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
  end subroutine MAM_GetFieldName
 
@@ -3238,7 +3238,7 @@ contains
 
     if ((.not. associated(pSO4_aq)) .or. (.not. associated(pNH4_aq))) then
         print *, 'Skipping MAM::AqueousChemistry()'
-        RETURN_(ESMF_SUCCESS)
+        _RETURN(ESMF_SUCCESS)
     end if
 
 
@@ -3332,7 +3332,7 @@ contains
     deallocate(num_aq, __STAT__)
     deallocate(f,      __STAT__)
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
  end subroutine AqueousChemistry
 
@@ -3464,7 +3464,7 @@ contains
         end do
     end do
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
  end subroutine CIM_Diagnostics
 
@@ -3628,7 +3628,7 @@ contains
     end do
 
 
-    RETURN_(ESMF_SUCCESS)
+    _RETURN(ESMF_SUCCESS)
 
  end subroutine SFC_Diagnostics
 
@@ -4108,7 +4108,7 @@ contains
   deallocate(ext,  sca,  ssa,  asy, __STAT__)
   deallocate(ext_, sca_, asy_,      __STAT__)
 
-  RETURN_(ESMF_SUCCESS)
+  _RETURN(ESMF_SUCCESS)
 
  end subroutine AOT_Diagnostics
 
@@ -4144,7 +4144,7 @@ logical function isDataDrivenGC_(GC, rc)
        isDataDrivenGC_ = .false.
    end if
 
-   RETURN_(ESMF_SUCCESS)
+   _RETURN(ESMF_SUCCESS)
 
 end function isDataDrivenGC_
 
@@ -4539,7 +4539,7 @@ end function isDataDrivenGC_
   deallocate(ext,  sca,  ssa,  asy, __STAT__)
   deallocate(ext_, sca_, asy_,      __STAT__)
 
-  RETURN_(ESMF_SUCCESS)
+  _RETURN(ESMF_SUCCESS)
 
  end subroutine aerosol_optics
 
@@ -4972,7 +4972,7 @@ subroutine aerosol_activation_properties(state, rc)
   end select
 
 
-  RETURN_(ESMF_SUCCESS)
+  _RETURN(ESMF_SUCCESS)
 
 contains
 
@@ -5064,7 +5064,7 @@ contains
          end do
      end do
 
-     RETURN_(ESMF_SUCCESS)
+     _RETURN(ESMF_SUCCESS)
 
     end subroutine aap_
 
@@ -5100,7 +5100,7 @@ contains
       __raise__ (MAM_UNKNOWN_AEROSOL_CONSTITUENT_ERROR, "MAM::Unknown constituent: " // trim(constituent_name))
   end if
 
-  RETURN_(ESMF_SUCCESS)
+  _RETURN(ESMF_SUCCESS)
  end function constituent_index_
 
 
