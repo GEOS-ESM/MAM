@@ -25,7 +25,7 @@ One ESMF/MAPL gridded component, `MAM_GridCompMod`, for modal aerosol (MAM7 only
 |---|---|
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | File map, entry points, state, configuration, `AERO` methods, traps, observations |
 | [`docs/decisions.md`](docs/decisions.md) | Recorded design choices |
-| Parent: `../docs/ARCHITECTURE.md` (Chemistry) (on this line the parent's documents are not written yet; the MAPL2-line versions are on its `develop` branch) | How Chemistry adds, runs and connects MAM |
+| Parent: `../docs/ARCHITECTURE.md` (Chemistry) | How Chemistry adds, runs and connects MAM |
 | `TODO`, `CHANGELOG.md` | Dated 2015 to-do list; release notes (do not edit `CHANGELOG.md` for documentation) |
 
 ## Rules for agents
