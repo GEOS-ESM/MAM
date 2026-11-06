@@ -8,7 +8,7 @@ Other fixtures (for example GEOSadas, GEOSldas) may place this repository
 elsewhere; paths inside this repository do not change.
 
 Fixture path: `src/Components/@GEOSgcm_GridComp/GEOSagcm_GridComp/GEOSphysics_GridComp/@GEOSchem_GridComp/@MAM`.
-Parent: the Chemistry gridded component, [`../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) (sections 2.3 and 3); this document does not repeat how Chemistry adds, runs and connects its children.
+Parent: the Chemistry gridded component, `../docs/ARCHITECTURE.md` (`../../docs/ARCHITECTURE.md` in the fixture) (sections 2.3 and 3); this document does not repeat how Chemistry adds, runs and connects its children.
 
 ## 1. Map of the repository
 
@@ -80,7 +80,7 @@ Build options: preprocessor symbols `GEOS5 MODAL_AERO MODAL_AERO_7MODE GEOS5_POR
 - `AERO` (`Initialize_`): sets `implements_aerosol_optics_method` to true unconditionally; adds a field bundle `AEROSOLS` holding, per mode, `NUM_A_`, `WTR_A_`, `DGN_WET_` and `<species>_A_` internal fields (references, not copies); sets attributes `air_pressure_for_aerosol_optics` (`PLE`), `relative_humidity_for_aerosol_optics` (`RH`), `cloud_area_fraction_for_aerosol_optics` (empty), `band_for_aerosol_optics` (0), and names `EXT`, `SSA`, `ASY`; creates the `PLE`, `RH`, `EXT`, `SSA`, `ASY` fields in the state; attaches the method with `ESMF_MethodAdd(aero, label='aerosol_optics', userRoutine=aerosol_optics)`.
 - `aerosol_optics` reads `band_for_aerosol_optics` and calls `MAML_OpticsInterpolate` per mode with `MAM7_MieTable(1..7)` to fill `EXT`, `SSA`, `ASY`.
 - `AERO_ACI` (`Initialize_`): sets `implements_aerosol_activation_properties_method` true; adds per-mode activation-property fields; attaches `ESMF_MethodAdd(aero_aci, label='aerosol_activation_properties', userRoutine=aerosol_activation_properties)`. The nested routine `aap_` computes the properties.
-- Label: MAM attaches `aerosol_optics`, not `run_aerosol_optics`. How this relates to the label Radiation executes is Observation 10 of the parent document ([`../../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md), section 3.4); not repeated here.
+- Label: MAM attaches `aerosol_optics`, not `run_aerosol_optics`. How this relates to the label Radiation executes is Observation 10 of the parent document (`../../docs/ARCHITECTURE.md`, section 3.4); not repeated here.
 
 ## 8. The `.data` modifier
 
