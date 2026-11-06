@@ -1,14 +1,26 @@
 # MAM architecture
 
 **Audience:** coding agents and developers working on MAM (Modal Aerosol Model).
-**Describes:** the MAPL2 line, branch `main`.
-**Verified against:** `MAM` @ `f651cb7` (2026-11-06).
-**Placement:** as in the GEOSgcm fixture (`components.yaml` @ `0f2e0fb`).
+**Describes:** the MAPL3 line, branch `release/MAPL-v3`.
+**Verified against:** `MAM` @ `d9ca717` (2026-11-06).
+**Placement:** as in the GEOSgcm fixture (`components.yaml` @ `f50622d`).
 Other fixtures (for example GEOSadas, GEOSldas) may place this repository
 elsewhere; paths inside this repository do not change.
 
+**Build status on this line:** not built; not yet ported to MAPL3. On
+`release/MAPL-v3`, `@GEOSchem_GridComp/CMakeLists.txt` calls
+`esma_add_subdirectories(GOCART)` only, with the comment "Restore subdirs as
+components are ported to MAPL3."; `MAM` appears only in a commented-out list of
+subdirectories. The Chemistry top-level library (`GEOS_ChemGridComp.F90`, which
+adds this component) is present but not compiled: the `esma_add_library` block
+that builds it is commented out in `../CMakeLists.txt`. Build dependency
+`Chem_Shared` (Chemistry `Shared` directory) is also not built on this line. The code in this repository is the MAPL2 code, kept for a later
+port. It differs from the MAPL2 line only in the name of the constants module
+(`use MAPL_Constants` instead of `use MAPL_ConstantsMod`, 14 files) and
+trailing whitespace.
+
 Fixture path: `src/Components/@GEOSgcm_GridComp/GEOSagcm_GridComp/GEOSphysics_GridComp/@GEOSchem_GridComp/@MAM`.
-Parent: the Chemistry gridded component, `../docs/ARCHITECTURE.md` (`../../docs/ARCHITECTURE.md` in the fixture) (sections 2.3 and 3); this document does not repeat how Chemistry adds, runs and connects its children.
+Parent: the Chemistry gridded component, `../docs/ARCHITECTURE.md` (`../../docs/ARCHITECTURE.md` in the fixture) (on this line the parent's documents are not written yet; the MAPL2-line versions are on its `develop` branch); this document does not repeat how Chemistry adds, runs and connects its children.
 
 ## 1. Map of the repository
 
@@ -37,10 +49,10 @@ MAM computes the life cycle of modal aerosol: emissions of sea salt, dust, black
 
 ## 3. Place in the hierarchy
 
-- Parent: Chemistry (`GEOS_ChemGridComp.F90`). Chemistry adds two children with the same `SetServices`: `MAM` when `ENABLE_MAM` is true and `MAM.data` when `ENABLE_MAM_DATA` is true (`../GEOS_ChemGridComp.F90`, SetServices). Chemistry runs `Run_` in one phase (parent document, 3.3).
+- Parent: Chemistry (`GEOS_ChemGridComp.F90`). Chemistry adds two children with the same `SetServices`: `MAM` when `ENABLE_MAM` is true and `MAM.data` when `ENABLE_MAM_DATA` is true (`../GEOS_ChemGridComp.F90`, SetServices). Chemistry runs `Run_` in one phase (parent document).
 - Children: none. `SetServices` calls `MAPL_GenericSetServices` and registers no child.
 - Connections made by Chemistry into MAM: `AIRDENS`, `DELP`, `CN_PRCP`, `NCN_PRCP` from `CHEMENV`; gas, aqueous-production and tendency fields from `ACHEM` when `ACHEM` is enabled (`SO2`, `H2SO4`, `NH3`, `SOA_GAS` renamed from `ACHEM::SOAG`, `pSO4_aq`, `pNH4_aq`, `DDT_*`, `_*_gas`, `_*_aq`); `ALK4`, `CH4`, `C2H6`, `C3H6`, `C3H8`, `ISOP` from `GMICHEM` (`../GEOS_ChemGridComp.F90`, SetServices). Other imports (surface and meteorological fields, `MAM_Registry.rc` `ImportSpec`) come through Chemistry's own imports.
-- Consumers: `AERO` is read by Radiation, and `AERO_ACI` by Moist, when `AERO_PROVIDER` selects `MAM` (or `MAM.data`); the parent document records this, including the `ENABLE_AERO_ACI` condition (parent document, 3.4).
+- Consumers: `AERO` is read by Radiation, and `AERO_ACI` by Moist, when `AERO_PROVIDER` selects `MAM` (or `MAM.data`); the parent document records this, including the `ENABLE_AERO_ACI` condition (parent document).
 
 ## 4. Entry points
 
@@ -56,7 +68,7 @@ MAM computes the life cycle of modal aerosol: emissions of sea salt, dust, black
 - **Internal state**: created in `SetServices` by `MAPL_AddInternalSpec`, not from `MAM_Registry.rc` (its `InternalSpec` block is empty). Interstitial number and mass fields (`NUM_A_*`, `*_A_*`) are `RESTART = MAPL_RestartOptional` with `FRIENDLYTO = 'DYNAMICS:TURBULENCE:MOIST'`; cloud-borne fields (`NUM_C_*`, `*_C_*`) are `RESTART = MAPL_RestartOptional` with `FRIENDLYTO = 'MOIST'` only; `DGN_DRY_*` and `DGN_WET_*` are `MAPL_RestartSkip` with `FRIENDLYTO = trim(COMP_NAME)` (`MAM_GridCompMod.F90`, `SetServices`). *Inferred:* the `WTR_A_*` water fields were not read.
 - **Exports**: ACG `ExportSpec`, per-mode diagnostics added in `SetServices`, and `AERO`, `AERO_ACI`, `AERO_DP`. Parent re-export and consumers: parent document.
 - **Private state**: `MAM_State` (type in `MAM_GridCompMod.F90`): config, grid, the four bundles, scheme, flags, scavenging factors, narrow-band Mie tables. `MAM7_MieTable` is module-level, shared by all instances of the component in one process (`MAM`, `MAM.data`).
-- **Restarts**: internal fields only; the parent template names the `MAM` restart files (parent document, section 5).
+- **Restarts**: internal fields only; the parent template names the `MAM` restart files (parent document).
 
 ## 6. Configuration that changes structure
 
@@ -71,7 +83,7 @@ MAM computes the life cycle of modal aerosol: emissions of sea salt, dust, black
 | `narrowband_optics_*`, `broadband_optics_*` | Per-mode Mie table paths (the shipped values are absolute paths in a user's home directory, *Inferred:* placeholders). Only `narrowband_optics_*` is read by the component. |
 | `PRIMARY_AEROSOL_EMISSIONS:`, `EMISSIONS_*` tables | Mode, species, weight, width, size for primary emissions. *Inferred:* read by the emission modules (not checked). |
 
-Global (universal) config keys `MAM7_*_OPTICS:` (seven; no default, so a missing key is an error through `__RC__`) give the Mie tables used by `aerosol_optics`. The component name (`MAM` or `MAM.data`) only sets `data_driven`, which nothing reads, so `MAM` and `MAM.data` run the same code; differences come only from what Chemistry connects and from ExtData (section 8). Parent switches: `ENABLE_MAM`, `ENABLE_MAM_DATA`, `AERO_PROVIDER` (parent document, section 3).
+Global (universal) config keys `MAM7_*_OPTICS:` (seven; no default, so a missing key is an error through `__RC__`) give the Mie tables used by `aerosol_optics`. The component name (`MAM` or `MAM.data`) only sets `data_driven`, which nothing reads, so `MAM` and `MAM.data` run the same code; differences come only from what Chemistry connects and from ExtData (section 8). Parent switches: `ENABLE_MAM`, `ENABLE_MAM_DATA`, `AERO_PROVIDER` (parent document).
 
 Build options: preprocessor symbols `GEOS5 MODAL_AERO MODAL_AERO_7MODE GEOS5_PORT` are set privately for the library (`CMakeLists.txt`, `target_compile_definitions`): the CAM code is built for 7 modes at compile time. *Inferred:* this is the build-time counterpart of `scheme: MAM7`.
 
@@ -80,11 +92,11 @@ Build options: preprocessor symbols `GEOS5 MODAL_AERO MODAL_AERO_7MODE GEOS5_POR
 - `AERO` (`Initialize_`): sets `implements_aerosol_optics_method` to true unconditionally; adds a field bundle `AEROSOLS` holding, per mode, `NUM_A_`, `WTR_A_`, `DGN_WET_` and `<species>_A_` internal fields (references, not copies); sets attributes `air_pressure_for_aerosol_optics` (`PLE`), `relative_humidity_for_aerosol_optics` (`RH`), `cloud_area_fraction_for_aerosol_optics` (empty), `band_for_aerosol_optics` (0), and names `EXT`, `SSA`, `ASY`; creates the `PLE`, `RH`, `EXT`, `SSA`, `ASY` fields in the state; attaches the method with `ESMF_MethodAdd(aero, label='aerosol_optics', userRoutine=aerosol_optics)`.
 - `aerosol_optics` reads `band_for_aerosol_optics` and calls `MAML_OpticsInterpolate` per mode with `MAM7_MieTable(1..7)` to fill `EXT`, `SSA`, `ASY`.
 - `AERO_ACI` (`Initialize_`): sets `implements_aerosol_activation_properties_method` true; adds per-mode activation-property fields; attaches `ESMF_MethodAdd(aero_aci, label='aerosol_activation_properties', userRoutine=aerosol_activation_properties)`. The nested routine `aap_` computes the properties.
-- Label: MAM attaches `aerosol_optics`, not `run_aerosol_optics`. How this relates to the label Radiation executes is Observation 10 of the parent document (`../../docs/ARCHITECTURE.md`, section 3.4); not repeated here.
+- Label: MAM attaches `aerosol_optics`, not `run_aerosol_optics`. How this relates to the label Radiation executes is an observation of the parent document (`../../docs/ARCHITECTURE.md`, the parent's aerosol optics label observation); not repeated here.
 
 ## 8. The `.data` modifier
 
-`isDataDrivenGC_` returns true when the component name ends with `.data`; `SetServices` stores it in `MAM_State%data_driven` (`MAM_GridCompMod.F90`). A search of the file finds no other use of `data_driven`: `Initialize_` and `Run_` do not branch on it. So in this version `MAM` and `MAM.data` run the same code; any difference comes from what the parent connects and from ExtData (parent document, 2.3). (Contrast with GOCART's `isDataDrivenGC_`, cited in the parent document; not read here.)
+`isDataDrivenGC_` returns true when the component name ends with `.data`; `SetServices` stores it in `MAM_State%data_driven` (`MAM_GridCompMod.F90`). A search of the file finds no other use of `data_driven`: `Initialize_` and `Run_` do not branch on it. So in this version `MAM` and `MAM.data` run the same code; any difference comes from what the parent connects and from ExtData (parent document). (Contrast with GOCART's `isDataDrivenGC_`, cited in the parent document; not read here.)
 
 ## 9. Dependencies, traps, decisions, observations
 
@@ -115,4 +127,4 @@ Build options: preprocessor symbols `GEOS5 MODAL_AERO MODAL_AERO_7MODE GEOS5_POR
 6. `mam_optics_calculator.py` docstring names another program (`ana_lpe.x`, `Chem_Ext3d.py`).
 7. Chemistry exports `AERO_ACI` only with `ENABLE_AERO_ACI`, which the parent document found undefined; MAM always fills its own `AERO_ACI`.
 
-**Open questions for maintainers.** Is `MAM.data` meant to differ from `MAM` inside the component? Are the unlisted process modules (Observation 1) retired? Which label should `aerosol_optics` be (parent Observation 10)?
+**Open questions for maintainers.** Is `MAM.data` meant to differ from `MAM` inside the component? Are the unlisted process modules (Observation 1) retired? Which label should `aerosol_optics` be (see the parent's aerosol optics label observation)?

@@ -1,9 +1,9 @@
 # MAM decisions
 
 **Audience:** coding agents and developers working on MAM.
-**Describes:** the MAPL2 line, branch `main`.
-**Verified against:** `MAM` @ `f651cb7` (2026-11-06).
-**Placement:** as in the GEOSgcm fixture (`components.yaml` @ `0f2e0fb`).
+**Describes:** the MAPL3 line, branch `release/MAPL-v3`.
+**Verified against:** `MAM` @ `d9ca717` (2026-11-06).
+**Placement:** as in the GEOSgcm fixture (`components.yaml` @ `f50622d`).
 Other fixtures may place this repository elsewhere; paths inside this repository do not change.
 
 ### One source file, two component names
@@ -22,7 +22,7 @@ Other fixtures may place this repository elsewhere; paths inside this repository
 ### Optics by lookup tables, attached as a method on `AERO`
 - Pattern: `aerosol_optics` interpolates precomputed Mie tables (`MAML_OpticsInterpolate`) and is attached with `ESMF_MethodAdd(..., label='aerosol_optics')`; tables are made offline in `optics/` (`MAM_GridCompMod.F90`, `Initialize_`).
 - Likely reason: avoid Mie computation at run time. [Inferred]
-- Question for maintainers: which label should Radiation call (parent Observation 10)?
+- Question for maintainers: which label should Radiation call (see the parent's aerosol optics label observation)?
 
 ### Aerosol tracers as friendly tracers in the internal state
 - Pattern: interstitial number and mass fields have `FRIENDLYTO = 'DYNAMICS:TURBULENCE:MOIST'`, cloud-borne ones `'MOIST'` only, both with optional restart (`MAM_GridCompMod.F90`, `SetServices`).
